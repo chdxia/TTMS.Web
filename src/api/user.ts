@@ -1,12 +1,17 @@
 import { http } from "@/utils/http";
+import { baseUrlApi } from "./utils";
 
 export type UserResult = {
-  success: boolean;
-  data: {
-    /** 用户名 */
-    username: string;
+  IsSuccess: boolean;
+  ErrorCode: number;
+  Msg: string;
+  Body: {
+    /** 账号 */
+    account: string;
+    // 用户名
+    userName: string;
     /** 当前登陆用户的角色 */
-    roles: Array<string>;
+    // roles: Array<string>;
     /** `token` */
     accessToken: string;
     /** 用于调用刷新`accessToken`的接口时所需的`token` */
@@ -30,7 +35,7 @@ export type RefreshTokenResult = {
 
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  return http.request<UserResult>("post", baseUrlApi("User/Login"), { data });
 };
 
 /** 刷新token */

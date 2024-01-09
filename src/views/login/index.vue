@@ -18,6 +18,8 @@ import darkIcon from "@/assets/svg/dark.svg?component";
 import Lock from "@iconify-icons/ri/lock-fill";
 import User from "@iconify-icons/ri/user-3-fill";
 
+import { ElMessage } from "element-plus";
+
 defineOptions({
   name: "Login"
 });
@@ -33,8 +35,8 @@ dataThemeChange();
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123"
+  account: "visitor",
+  password: "123456"
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -43,14 +45,18 @@ const onLogin = async (formEl: FormInstance | undefined) => {
   await formEl.validate((valid, fields) => {
     if (valid) {
       useUserStoreHook()
-        .loginByUsername({ username: ruleForm.username, password: "admin123" })
+        .loginByUsername({ Account: ruleForm.account, PassWord: "123456" })
         .then(res => {
-          if (res.success) {
+          if (res.IsSuccess) {
             // 获取后端路由
             initRouter().then(() => {
               router.push(getTopMenu(true).path);
               message("登录成功", { type: "success" });
             });
+          } else {
+            loading.value = false;
+            ElMessage.error(res.Msg);
+            return fields;
           }
         });
     } else {
@@ -115,11 +121,11 @@ onBeforeUnmount(() => {
                     trigger: 'blur'
                   }
                 ]"
-                prop="username"
+                prop="account"
               >
                 <el-input
                   clearable
-                  v-model="ruleForm.username"
+                  v-model="ruleForm.account"
                   placeholder="账号"
                   :prefix-icon="useRenderIcon(User)"
                 />
