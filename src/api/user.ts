@@ -7,17 +7,13 @@ export type UserResult = {
   Msg: string;
   Body: {
     /** 账号 */
-    account: string;
+    Account: string;
     // 用户名
-    userName: string;
+    UserName: string;
     /** 当前登陆用户的角色 */
-    // roles: Array<string>;
+    RoleId: number;
     /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
-    refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
-    expires: Date;
+    AccessToken: string;
   };
 };
 
