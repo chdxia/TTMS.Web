@@ -1,7 +1,7 @@
 // import "@/utils/sso";
 import { getConfig } from "@/config";
 import NProgress from "@/utils/progress";
-import { sessionKey, type DataInfo } from "@/utils/auth";
+import { userInfo, type DataInfo } from "@/utils/auth";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import {
@@ -14,7 +14,7 @@ import {
   ascending,
   getTopMenu,
   initRouter,
-  isOneOfArray,
+  //isOneOfArray,
   getHistoryMode,
   findRouteByPath,
   handleAliveRoute,
@@ -108,7 +108,7 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       handleAliveRoute(to);
     }
   }
-  const userInfo = storageSession().getItem<DataInfo<number>>(sessionKey);
+  const getUserInfo = storageSession().getItem<DataInfo>(userInfo);
   NProgress.start();
   const externalLink = isUrl(to?.name as string);
   if (!externalLink) {
@@ -123,11 +123,11 @@ router.beforeEach((to: ToRouteType, _from, next) => {
   function toCorrectRoute() {
     whiteList.includes(to.fullPath) ? next(_from.fullPath) : next();
   }
-  if (userInfo) {
+  if (getUserInfo) {
     // 无权限跳转403页面
-    if (to.meta?.roles && !isOneOfArray(to.meta?.roles, userInfo?.roles)) {
-      next({ path: "/error/403" });
-    }
+    // if (to.meta?.roles && !isOneOfArray(to.meta?.roles, getUserInfo?.roles)) {
+    //   next({ path: "/error/403" });
+    // }
     // 开启隐藏首页后在浏览器地址栏手动输入首页welcome路由则跳转到404页面
     if (VITE_HIDE_HOME === "true" && to.fullPath === "/welcome") {
       next({ path: "/error/404" });
