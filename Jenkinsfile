@@ -20,7 +20,7 @@ pipeline {
       steps {
         // 删除历史构建，重新在本地构建
         nodejs("nodejs"){
-          sh 'rm -rf ./dist && node -v && pnpm install && pnpm build'
+          sh 'rm -rf ./dist && pnpm --registry https://registry.npm.taobao.org install && pnpm build'
         }
       }
     }
