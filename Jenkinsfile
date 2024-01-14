@@ -1,6 +1,5 @@
 pipeline {
   agent {label 'master'}
-  //tools {nodejs '18.16.0'}
   options {
     skipStagesAfterUnstable()
     timeout(time: 1, unit: 'HOURS') 
