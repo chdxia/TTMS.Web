@@ -1,6 +1,6 @@
 pipeline {
   agent {label 'master'}
-  tools {nodejs '18.16.0'}
+  //tools {nodejs '18.16.0'}
   options {
     skipStagesAfterUnstable()
     timeout(time: 1, unit: 'HOURS') 
@@ -20,7 +20,9 @@ pipeline {
     stage('本地构建') {
       steps {
         // 删除历史构建，重新在本地构建
-        sh 'rm -rf ./dist && pnpm install && pnpm build'
+        nodejs("nodejs"){
+          sh 'rm -rf ./dist && pnpm install && pnpm build'
+        }
       }
     }
     stage('远程部署') {
