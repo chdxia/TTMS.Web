@@ -7,7 +7,7 @@ import { useNav } from "@/layout/hooks/useNav";
 import type { FormInstance } from "element-plus";
 import { useLayout } from "@/layout/hooks/useLayout";
 import { useUserStoreHook } from "@/store/modules/user";
-import { initRouter, getTopMenu } from "@/router/utils";
+// import { initRouter, getTopMenu } from "@/router/utils";
 import { bg, avatar, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { ref, reactive, toRaw, onMounted, onBeforeUnmount } from "vue";
@@ -49,10 +49,12 @@ const onLogin = async (formEl: FormInstance | undefined) => {
         .then(res => {
           if (res.IsSuccess) {
             // 获取后端路由
-            initRouter().then(() => {
-              router.push(getTopMenu(true).path);
-              message("登录成功", { type: "success" });
-            });
+            // initRouter().then(() => {
+            //   router.push(getTopMenu(true).path);
+            //   message("登录成功", { type: "success" });
+            // });
+            router.push("/");
+            message("登录成功", { type: "success" });
           } else {
             loading.value = false;
             ElMessage.error(res.Msg);

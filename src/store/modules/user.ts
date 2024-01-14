@@ -9,6 +9,9 @@ import { UserResult, RefreshTokenResult } from "@/api/user";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { type DataInfo, setToken, removeToken, userInfo } from "@/utils/auth";
 
+import { addPathMatch } from "@/router/utils";
+import { usePermissionStoreHook } from "@/store/modules/permission";
+
 export const useUserStore = defineStore({
   id: "pure-user",
   state: (): userType => ({
@@ -38,6 +41,8 @@ export const useUserStore = defineStore({
         getLogin(data)
           .then(data => {
             if (data) {
+              usePermissionStoreHook().handleWholeMenus([]);
+              addPathMatch();
               setToken(data.Body);
               resolve(data);
             }

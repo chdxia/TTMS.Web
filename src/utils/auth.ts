@@ -5,8 +5,6 @@ import { useUserStoreHook } from "@/store/modules/user";
 export interface DataInfo {
   /** token */
   AccessToken: string;
-  // 过期时间
-  Expires: number;
   // 账户
   Account?: string;
   /** 用户名 */
