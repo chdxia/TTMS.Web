@@ -4,7 +4,8 @@ import { cacheType } from "./types";
 import { constantMenus } from "@/router";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { debounce, getKeyList } from "@pureadmin/utils";
-import { ascending, filterTree, filterNoPermissionTree } from "@/router/utils";
+// import { ascending, filterTree, filterNoPermissionTree } from "@/router/utils";
+import { ascending, filterTree } from "@/router/utils";
 
 export const usePermissionStore = defineStore({
   id: "pure-permission",
