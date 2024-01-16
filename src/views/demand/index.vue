@@ -47,7 +47,7 @@ const list = ref([]);
 
 function handleFilter() {
   getDemandPageList(listQuery.value).then(response => {
-    list.value = response.Body.Items.map(item => {
+    list.value = response.Data.Items.map(item => {
       return item;
     });
   });

@@ -5,7 +5,7 @@ export type UserResult = {
   IsSuccess: boolean;
   ErrorCode: number;
   Msg: string;
-  Body: {
+  Data: {
     /** 账号 */
     Account: string;
     // 用户名

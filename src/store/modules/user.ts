@@ -43,7 +43,7 @@ export const useUserStore = defineStore({
             if (data) {
               usePermissionStoreHook().handleWholeMenus([]);
               addPathMatch();
-              setToken(data.Body);
+              setToken(data.Data);
               resolve(data);
             }
           })

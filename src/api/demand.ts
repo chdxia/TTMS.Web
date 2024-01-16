@@ -5,21 +5,21 @@ type Result = {
   IsSuccess: boolean;
   ErrorCode: number;
   Msg: string;
-  Body: object;
+  Data: object;
 };
 
 type ListResult = {
   IsSuccess: boolean;
   ErrorCode: number;
   Msg: string;
-  Body: Array<any>;
+  Data: Array<any>;
 };
 
 type PageListResult = {
   IsSuccess: boolean;
   ErrorCode: number;
   Msg: string;
-  Body: {
+  Data: {
     Items: Array<any>;
     PageIndex: number;
     PageSize: number;
