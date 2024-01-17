@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { baseUrlApi } from "./utils";
+import { baseUrlApi, Result, ListResult, PageListResult } from "./utils";
 
 export type UserResult = {
   IsSuccess: boolean;
@@ -17,24 +17,47 @@ export type UserResult = {
   };
 };
 
-export type RefreshTokenResult = {
-  success: boolean;
-  data: {
-    /** `token` */
-    accessToken: string;
-    /** 用于调用刷新`accessToken`的接口时所需的`token` */
-    refreshToken: string;
-    /** `accessToken`的过期时间（格式'xxxx/xx/xx xx:xx:xx'） */
-    expires: Date;
-  };
-};
-
 /** 登录 */
 export const getLogin = (data?: object) => {
   return http.request<UserResult>("post", baseUrlApi("User/Login"), { data });
 };
 
-/** 刷新token */
-export const refreshTokenApi = (data?: object) => {
-  return http.request<RefreshTokenResult>("post", "/refreshToken", { data });
+// 根据id获取用户信息
+export const getUserById = (userId: number) => {
+  return http.request<Result>("get", baseUrlApi(`User/${userId}`));
+};
+
+// 获取用户列表
+export const getUserList = (data?: object) => {
+  return http.request<ListResult>("post", baseUrlApi("User/GetList"), {
+    data
+  });
+};
+
+// 分页获取用户列表
+export const getUserPageList = (data?: object) => {
+  return http.request<PageListResult>("post", baseUrlApi("User/GetPageList"), {
+    data
+  });
+};
+
+// 新增用户
+export const createUser = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("User/CreateUser"), {
+    data
+  });
+};
+
+// 编辑用户
+export const updateUser = (data?: object) => {
+  return http.request<Result>("post", baseUrlApi("User/UpdateUser"), {
+    data
+  });
+};
+
+// 批量删除用户
+export const deleteUser = (data?: object) => {
+  return http.request<Result>("delete", baseUrlApi("User/DeleteUser"), {
+    data
+  });
 };
