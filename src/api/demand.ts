@@ -1,32 +1,5 @@
 import { http } from "@/utils/http";
-import { baseUrlApi } from "./utils";
-
-type Result = {
-  IsSuccess: boolean;
-  ErrorCode: number;
-  Msg: string;
-  Data: object;
-};
-
-type ListResult = {
-  IsSuccess: boolean;
-  ErrorCode: number;
-  Msg: string;
-  Data: Array<any>;
-};
-
-type PageListResult = {
-  IsSuccess: boolean;
-  ErrorCode: number;
-  Msg: string;
-  Data: {
-    Items: Array<any>;
-    PageIndex: number;
-    PageSize: number;
-    TotalPages: number;
-    TotalCount: number;
-  };
-};
+import { baseUrlApi, Result, ListResult, PageListResult } from "./utils";
 
 // 根据id获取需求信息
 export const getDemandById = (demandId: number) => {

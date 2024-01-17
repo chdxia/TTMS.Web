@@ -1,7 +1,8 @@
 export default {
   path: "/demand",
   meta: {
-    title: "需求池"
+    title: "需求池",
+    rank: 1
   },
   children: [
     {
