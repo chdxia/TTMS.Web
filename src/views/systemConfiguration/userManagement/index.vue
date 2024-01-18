@@ -6,7 +6,9 @@ import {
   updateUser,
   deleteUser
 } from "@/api/user";
+import { getGroupList } from "@/api/group";
 import { RoleType } from "@/enums/RoleType";
+import { ElMessage } from "element-plus";
 
 defineOptions({
   name: "UserManagement"
@@ -30,9 +32,14 @@ const listQuery = ref({
   PageIndex: 1,
   PageSize: 20
 });
+const createTimeQuery = ref(null);
+const updateTimeQuery = ref(null);
 
 const userList = ref([]);
 const totalCountUser = ref(0);
+const groupList = ref([]);
+
+const userListLoading = ref(false);
 
 const roleOptions = computed(() => {
   const options = [];
@@ -53,11 +60,38 @@ const stateOptions = [
 ];
 
 function handleFilter() {
-  getUserPageList(listQuery.value).then(response => {
-    userList.value = response.Data.Items.map(item => {
-      return item;
-    });
-    totalCountUser.value = response.Data.TotalCount;
+  userListLoading.value = true;
+  if (createTimeQuery.value == null) {
+    listQuery.value.CreateTimeStart = undefined;
+    listQuery.value.CreateTimeEnd = undefined;
+  } else {
+    listQuery.value.CreateTimeStart = createTimeQuery.value[0];
+    listQuery.value.CreateTimeEnd = createTimeQuery.value[1];
+  }
+  if (updateTimeQuery.value == null) {
+    listQuery.value.UpdateTimeStart = undefined;
+    listQuery.value.UpdateTimeEnd = undefined;
+  } else {
+    listQuery.value.UpdateTimeStart = updateTimeQuery.value[0];
+    listQuery.value.UpdateTimeEnd = updateTimeQuery.value[1];
+  }
+  getUserPageList(listQuery.value).then(res => {
+    if (res.IsSuccess) {
+      userList.value = res.Data.Items.map(item => {
+        const group = groupList.value.find(group => group.Id === item.GroupId);
+        return {
+          ...item,
+          GroupName: group ? group.GroupName : item.GroupId
+        };
+      });
+      totalCountUser.value = res.Data.TotalCount;
+      setTimeout(() => {
+        userListLoading.value = false;
+      }, 0.3 * 1000);
+    } else {
+      ElMessage.error(res.Msg);
+      userListLoading.value = false;
+    }
   });
 }
 
@@ -79,7 +113,17 @@ function handleReset() {
     PageIndex: 1,
     PageSize: 20
   };
+  createTimeQuery.value = null;
+  updateTimeQuery.value = null;
   handleFilter();
+}
+
+function setGroupList() {
+  getGroupList({}).then(response => {
+    groupList.value = response.Data.map(item => {
+      return item;
+    });
+  });
 }
 
 function getStateText(state) {
@@ -98,80 +142,129 @@ function showBugClick() {
 function handleUpdate() {
   // 编辑BUG
 }
+
+onMounted(() => {
+  setGroupList();
+  handleFilter();
+});
 </script>
 
 <template>
   <div>
-    <div>
-      <el-input
-        v-model="listQuery.Account"
-        placeholder="请输入账户名"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.UserName"
-        placeholder="请输入用户名"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.Email"
-        placeholder="请输入邮箱"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.GroupId"
-        placeholder="请选择分组"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-select
-        v-model="listQuery.RoleId"
-        placeholder="请选择角色"
-        style="width: 90px; margin-right: 10px"
-      >
-        <el-option
-          v-for="option in roleOptions"
-          :key="option.value"
-          :label="option.label"
-          :value="option.value"
+    <el-form :inline="true">
+      <el-form-item label="账户名：">
+        <el-input
+          v-model="listQuery.Account"
+          @keyup.enter="handleFilter"
+          style="width: 120px"
         />
-      </el-select>
-      <el-select
-        v-model="listQuery.State"
-        placeholder="请选择状态"
-        style="width: 90px; margin-right: 10px"
-      >
-        <el-option
-          v-for="option in stateOptions"
-          :key="option.value"
-          :label="option.text"
-          :value="option.value"
+      </el-form-item>
+      <el-form-item label="用户名：">
+        <el-input
+          v-model="listQuery.UserName"
+          @keyup.enter="handleFilter"
+          style="width: 120px"
         />
-      </el-select>
-      <el-input
-        v-model="listQuery.CreateBy"
-        placeholder="请选择创建人"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.CreateTimeStart"
-        placeholder="请选择创建时间"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.UpdateBy"
-        placeholder="请选择最后修改人"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-input
-        v-model="listQuery.UpdateTimeStart"
-        placeholder="请选择最后修改时间"
-        style="width: 90px; margin-right: 10px"
-      />
-      <el-button type="primary" style="margin-left: 10px" @click="handleFilter"
-        >查询</el-button
-      >
-      <el-button style="margin-left: 10px" @click="handleReset">重置</el-button>
-    </div>
+      </el-form-item>
+      <el-form-item label="邮箱：">
+        <el-input
+          v-model="listQuery.Email"
+          @keyup.enter="handleFilter"
+          style="width: 180px"
+        />
+      </el-form-item>
+      <el-form-item label="选择分组：">
+        <el-select
+          v-model="listQuery.GroupId"
+          placeholder="请选择"
+          style="width: 120px"
+        >
+          <el-option
+            v-for="option in groupList"
+            :key="option.Id"
+            :label="option.GroupName"
+            :value="option.Id"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="选择角色：">
+        <el-select
+          v-model="listQuery.RoleId"
+          placeholder="请选择"
+          style="width: 120px"
+        >
+          <el-option
+            v-for="option in roleOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="选择状态：">
+        <el-select
+          v-model="listQuery.State"
+          placeholder="请选择"
+          style="width: 120px"
+        >
+          <el-option
+            v-for="option in stateOptions"
+            :key="option.value"
+            :label="option.text"
+            :value="option.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="创建人：">
+        <el-input
+          v-model="listQuery.CreateBy"
+          placeholder="请选择"
+          style="width: 120px"
+        />
+      </el-form-item>
+      <el-form-item label="创建时间：">
+        <el-date-picker
+          v-model="createTimeQuery"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          format="YYYY/MM/DD"
+          value-format="YYYY-MM-DD"
+          style="width: 220px"
+        />
+      </el-form-item>
+      <el-form-item label="最后修改人：">
+        <el-input
+          v-model="listQuery.UpdateBy"
+          placeholder="请选择"
+          style="width: 120px"
+        />
+      </el-form-item>
+      <el-form-item label="最后修改时间：">
+        <el-date-picker
+          v-model="updateTimeQuery"
+          type="daterange"
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          format="YYYY/MM/DD"
+          value-format="YYYY-MM-DD"
+          style="width: 220px"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          type="primary"
+          style="margin-left: 10px"
+          @click="handleFilter"
+          >查询</el-button
+        >
+        <el-button style="margin-left: 10px" @click="handleReset"
+          >重置</el-button
+        >
+      </el-form-item>
+    </el-form>
     <div
       style="display: flex; align-items: center; justify-content: space-between"
     >
@@ -193,12 +286,17 @@ function handleUpdate() {
       />
     </div>
     <div>
-      <el-table :data="userList" border style="width: 100%">
+      <el-table
+        :data="userList"
+        v-loading="userListLoading"
+        border
+        style="width: 100%"
+      >
         <el-table-column prop="Id" label="序号" width="60" />
         <el-table-column prop="Account" label="账户名" width="90" />
         <el-table-column prop="UserName" label="用户名" width="90" />
         <el-table-column prop="Email" label="邮箱" width="180" />
-        <el-table-column prop="GroupId" label="分组" width="90" />
+        <el-table-column prop="GroupName" label="分组" width="90" />
         <el-table-column prop="RoleId" label="角色" width="90">
           <template #default="{ row }">
             {{ RoleType[row.RoleId] }}
@@ -215,7 +313,7 @@ function handleUpdate() {
         <el-table-column prop="CreateTime" label="创建时间" width="180" />
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
-        <el-table-column fixed="right" label="操作" width="180">
+        <el-table-column fixed="right" label="操作" width="180" align="center">
           <template #default="row">
             <el-button
               link
