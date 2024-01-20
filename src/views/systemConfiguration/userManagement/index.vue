@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, reactive } from "vue";
 import {
   getUserPageList,
+  getUserList,
   createUser,
   updateUser,
   deleteUser
 } from "@/api/user";
 import { getGroupList } from "@/api/group";
 import { RoleType } from "@/enums/RoleType";
-import { ElMessage } from "element-plus";
+import { ElMessage, FormRules, FormInstance } from "element-plus";
 
 defineOptions({
   name: "UserManagement"
@@ -41,6 +42,10 @@ const groupList = ref([]);
 
 const userListLoading = ref(false);
 
+const dialogFormVisible = ref(false);
+
+const dialogStatus = ref("");
+
 const roleOptions = computed(() => {
   const options = [];
   for (const key in RoleType) {
@@ -55,9 +60,30 @@ const roleOptions = computed(() => {
 });
 
 const stateOptions = [
-  { value: true, text: "已启用" },
-  { value: false, text: "已禁用" }
+  { id: 1, value: true, text: "已启用" },
+  { id: 2, value: false, text: "已禁用" }
 ];
+
+const userFormRef = ref<FormInstance>();
+
+const userForm = reactive({
+  Account: undefined,
+  UserName: undefined,
+  Email: undefined,
+  GroupId: undefined,
+  PassWord: undefined,
+  RoleId: undefined,
+  Id: undefined,
+  State: undefined
+});
+
+const userRule = reactive<FormRules<typeof userForm>>({
+  Account: [{ required: true, message: "请输入账号", trigger: "blur" }],
+  Email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
+  PassWord: [{ required: true, message: "请输入密码", trigger: "blur" }],
+  RoleId: [{ required: true, message: "请选择角色", trigger: "blur" }],
+  State: [{ required: true, message: "请选择状态", trigger: "blur" }]
+});
 
 function handleFilter() {
   userListLoading.value = true;
@@ -95,7 +121,7 @@ function handleFilter() {
   });
 }
 
-function handleReset() {
+function handleQueryReset() {
   listQuery.value = {
     Id: undefined,
     Account: undefined,
@@ -135,13 +161,61 @@ function getStateClass(state) {
   return state ? "state-enabled" : "state-disabled";
 }
 
-// 悬浮展示bug明细列表
-function showBugClick() {
-  //
+function closeDialogForm() {
+  dialogFormVisible.value = false;
+  userFormReset();
 }
-function handleUpdate() {
-  // 编辑BUG
+
+function userFormReset() {
+  userForm.Account = undefined;
+  userForm.UserName = undefined;
+  userForm.Email = undefined;
+  userForm.GroupId = undefined;
+  userForm.PassWord = undefined;
+  userForm.RoleId = undefined;
+  userForm.Id = undefined;
+  userForm.State = undefined;
 }
+
+function handleCreateUser() {
+  userFormReset();
+  dialogStatus.value = "新建用户";
+  userRule.PassWord[0].required = true;
+  userRule.State[0].required = false;
+  dialogFormVisible.value = true;
+}
+
+function createUserForm() {
+  userFormRef.value.validate(valid => {
+    if (valid) {
+      createUser(userForm).then(res => {
+        if (res.IsSuccess) {
+          dialogFormVisible.value = false;
+          ElMessage.success("操作成功");
+          const query = { Account: this.userForm.Account };
+          getUserList(query).then(res => {
+            if (res.IsSuccess) {
+              const user = res.Data[0];
+              userList.value.unshift(user);
+            }
+          });
+        } else {
+          ElMessage.error(res.Msg);
+        }
+      });
+    }
+  });
+}
+
+function handleUpdateUser(row) {
+  this.userForm = Object.assign({}, row);
+  dialogStatus.value = "编辑用户";
+  userRule.PassWord[0].required = false;
+  userRule.State[0].required = true;
+  dialogFormVisible.value = true;
+}
+
+function updateUserForm() {}
 
 onMounted(() => {
   setGroupList();
@@ -152,28 +226,28 @@ onMounted(() => {
 <template>
   <div>
     <el-form :inline="true">
-      <el-form-item label="账户名：">
+      <el-form-item label="账户名:">
         <el-input
           v-model="listQuery.Account"
           @keyup.enter="handleFilter"
           style="width: 120px"
         />
       </el-form-item>
-      <el-form-item label="用户名：">
+      <el-form-item label="用户名:">
         <el-input
           v-model="listQuery.UserName"
           @keyup.enter="handleFilter"
           style="width: 120px"
         />
       </el-form-item>
-      <el-form-item label="邮箱：">
+      <el-form-item label="邮箱:">
         <el-input
           v-model="listQuery.Email"
           @keyup.enter="handleFilter"
           style="width: 180px"
         />
       </el-form-item>
-      <el-form-item label="选择分组：">
+      <el-form-item label="选择分组:">
         <el-select
           v-model="listQuery.GroupId"
           placeholder="请选择"
@@ -187,7 +261,7 @@ onMounted(() => {
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="选择角色：">
+      <el-form-item label="选择角色:">
         <el-select
           v-model="listQuery.RoleId"
           placeholder="请选择"
@@ -201,7 +275,7 @@ onMounted(() => {
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="选择状态：">
+      <el-form-item label="选择状态:">
         <el-select
           v-model="listQuery.State"
           placeholder="请选择"
@@ -209,20 +283,20 @@ onMounted(() => {
         >
           <el-option
             v-for="option in stateOptions"
-            :key="option.value"
+            :key="option.id"
             :label="option.text"
             :value="option.value"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="创建人：">
+      <el-form-item label="创建人:">
         <el-input
           v-model="listQuery.CreateBy"
           placeholder="请选择"
           style="width: 120px"
         />
       </el-form-item>
-      <el-form-item label="创建时间：">
+      <el-form-item label="创建时间:">
         <el-date-picker
           v-model="createTimeQuery"
           type="daterange"
@@ -234,14 +308,14 @@ onMounted(() => {
           style="width: 220px"
         />
       </el-form-item>
-      <el-form-item label="最后修改人：">
+      <el-form-item label="最后修改人:">
         <el-input
           v-model="listQuery.UpdateBy"
           placeholder="请选择"
           style="width: 120px"
         />
       </el-form-item>
-      <el-form-item label="最后修改时间：">
+      <el-form-item label="最后修改时间:">
         <el-date-picker
           v-model="updateTimeQuery"
           type="daterange"
@@ -257,10 +331,10 @@ onMounted(() => {
         <el-button
           type="primary"
           style="margin-left: 10px"
-          @click="handleFilter"
+          @click="handleFilter()"
           >查询</el-button
         >
-        <el-button style="margin-left: 10px" @click="handleReset"
+        <el-button style="margin-left: 10px" @click="handleQueryReset()"
           >重置</el-button
         >
       </el-form-item>
@@ -269,20 +343,20 @@ onMounted(() => {
       style="display: flex; align-items: center; justify-content: space-between"
     >
       <div style="display: flex; align-items: center">
-        <el-button type="primary" @click="handleFilter">新增</el-button>
-        <el-button type="danger" @click="handleFilter">批量删除</el-button>
+        <el-button type="primary" @click="handleCreateUser()">新增</el-button>
+        <el-button type="danger" @click="handleFilter()">批量删除</el-button>
       </div>
       <el-pagination
         v-model:current-page="listQuery.PageIndex"
         v-model:page-size="listQuery.PageSize"
         :page-sizes="[20, 50, 100, 500]"
-        :small="small"
-        :disabled="disabled"
-        :background="background"
+        :small="true"
+        :disabled="false"
+        :background="true"
         layout="total, sizes, prev, pager, next, jumper"
         :total="totalCountUser"
-        @size-change="handleFilter"
-        @current-change="handleFilter"
+        @size-change="handleFilter()"
+        @current-change="handleFilter()"
       />
     </div>
     <div>
@@ -319,26 +393,101 @@ onMounted(() => {
               link
               type="primary"
               size="small"
-              @click="handleUpdate(row)"
+              @click="dialogFormVisible = true"
               >权限配置</el-button
             >
             <el-button
               link
               type="primary"
               size="small"
-              @click="handleUpdate(row)"
+              @click="handleUpdateUser(row)"
               >编辑</el-button
             >
             <el-button
               link
               type="primary"
               size="small"
-              @click="handleUpdate(row)"
+              @click="dialogFormVisible = true"
               >禁用</el-button
             >
           </template>
         </el-table-column>
       </el-table>
+    </div>
+    <div>
+      <el-dialog
+        v-model="dialogFormVisible"
+        :title="dialogStatus"
+        :before-close="closeDialogForm"
+        width="600px"
+      >
+        <el-form
+          ref="userFormRef"
+          :model="userForm"
+          :rules="userRule"
+          label-width="140px"
+          style="max-width: 460px"
+        >
+          <el-form-item label="账户名:" prop="Account">
+            <el-input v-model="userForm.Account" />
+          </el-form-item>
+          <el-form-item label="用户名:" prop="UserName">
+            <el-input v-model="userForm.UserName" />
+          </el-form-item>
+          <el-form-item label="邮箱:" prop="Email">
+            <el-input v-model="userForm.Email" />
+          </el-form-item>
+          <el-form-item label="密码:" prop="PassWord">
+            <el-input
+              v-model="userForm.PassWord"
+              type="password"
+              show-password
+            />
+          </el-form-item>
+          <el-form-item label="选择分组:" prop="GroupId">
+            <el-select v-model="userForm.GroupId" placeholder="请选择">
+              <el-option
+                v-for="option in groupList"
+                :key="option.Id"
+                :label="option.GroupName"
+                :value="option.Id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="选择角色:" prop="RoleId">
+            <el-select v-model="userForm.RoleId" placeholder="请选择">
+              <el-option
+                v-for="option in roleOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="选择状态:" prop="State">
+            <el-select v-model="userForm.State" placeholder="请选择">
+              <el-option
+                v-for="option in stateOptions"
+                :key="option.id"
+                :label="option.text"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+          <div style="text-align: right">
+            <el-button @click="closeDialogForm()">取消</el-button>
+            <el-button
+              type="primary"
+              @click="
+                dialogStatus === '新建用户'
+                  ? createUserForm()
+                  : updateUserForm()
+              "
+              >确定</el-button
+            >
+          </div>
+        </el-form>
+      </el-dialog>
     </div>
   </div>
 </template>
