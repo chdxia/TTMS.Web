@@ -234,6 +234,27 @@ function updateUserForm() {
   });
 }
 
+function handleBatchDeleteUser() {
+  const selectedUsers = userList.value.filter(user => user.selected);
+  if (selectedUsers.length === 0) {
+    ElMessage.warning("请选择要删除的用户");
+    return;
+  }
+
+  const userIds = selectedUsers.map(user => user.Id);
+  deleteUser(userIds).then(res => {
+    if (res.IsSuccess) {
+      // 从userList中移除已删除的用户
+      userList.value = userList.value.filter(
+        user => !userIds.includes(user.Id)
+      );
+      ElMessage.success("批量删除成功");
+    } else {
+      ElMessage.error(res.Msg);
+    }
+  });
+}
+
 onMounted(() => {
   setGroupList();
   handleFilter();
@@ -361,7 +382,16 @@ onMounted(() => {
     >
       <div style="display: flex; align-items: center">
         <el-button type="primary" @click="handleCreateUser()">新增</el-button>
-        <el-button type="danger" @click="handleFilter()">批量删除</el-button>
+        <el-popconfirm
+          confirm-button-text="确定"
+          cancel-button-text="取消"
+          title="确定删除所选？"
+          @confirm="handleBatchDeleteUser()"
+        >
+          <template #reference>
+            <el-button type="danger">批量删除</el-button>
+          </template>
+        </el-popconfirm>
       </div>
       <el-pagination
         v-model:current-page="listQuery.PageIndex"
@@ -382,6 +412,7 @@ onMounted(() => {
         v-loading="userListLoading"
         border
         style="width: 100%"
+        @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
