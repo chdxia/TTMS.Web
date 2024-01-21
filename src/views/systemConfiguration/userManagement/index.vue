@@ -66,7 +66,7 @@ const stateOptions = [
 
 const userFormRef = ref<FormInstance>();
 
-const userForm = reactive({
+const userForm = ref({
   Account: undefined,
   UserName: undefined,
   Email: undefined,
@@ -167,14 +167,14 @@ function closeDialogForm() {
 }
 
 function userFormReset() {
-  userForm.Account = undefined;
-  userForm.UserName = undefined;
-  userForm.Email = undefined;
-  userForm.GroupId = undefined;
-  userForm.PassWord = undefined;
-  userForm.RoleId = undefined;
-  userForm.Id = undefined;
-  userForm.State = undefined;
+  userForm.value.Account = undefined;
+  userForm.value.UserName = undefined;
+  userForm.value.Email = undefined;
+  userForm.value.GroupId = undefined;
+  userForm.value.PassWord = undefined;
+  userForm.value.RoleId = undefined;
+  userForm.value.Id = undefined;
+  userForm.value.State = undefined;
 }
 
 function handleCreateUser() {
@@ -188,10 +188,9 @@ function handleCreateUser() {
 function createUserForm() {
   userFormRef.value.validate(valid => {
     if (valid) {
-      createUser(userForm).then(res => {
+      createUser(userForm.value).then(res => {
         if (res.IsSuccess) {
           dialogFormVisible.value = false;
-          ElMessage.success("操作成功");
           const query = { Account: this.userForm.Account };
           getUserList(query).then(res => {
             if (res.IsSuccess) {
@@ -199,6 +198,7 @@ function createUserForm() {
               userList.value.unshift(user);
             }
           });
+          ElMessage.success("操作成功");
         } else {
           ElMessage.error(res.Msg);
         }
@@ -208,14 +208,31 @@ function createUserForm() {
 }
 
 function handleUpdateUser(row) {
-  this.userForm = Object.assign({}, row);
+  userForm.value = Object.assign({}, row);
   dialogStatus.value = "编辑用户";
   userRule.PassWord[0].required = false;
   userRule.State[0].required = true;
   dialogFormVisible.value = true;
 }
 
-function updateUserForm() {}
+function updateUserForm() {
+  userFormRef.value.validate(valid => {
+    if (valid) {
+      updateUser(userForm.value).then(res => {
+        if (res.IsSuccess) {
+          dialogFormVisible.value = false;
+          const index = userList.value.findIndex(
+            v => v.Id === userForm.value.Id
+          );
+          userList.value.splice(index, 1, userForm.value);
+          ElMessage.success("操作成功");
+        } else {
+          ElMessage.error(res.Msg);
+        }
+      });
+    }
+  });
+}
 
 onMounted(() => {
   setGroupList();
@@ -366,6 +383,7 @@ onMounted(() => {
         border
         style="width: 100%"
       >
+        <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
         <el-table-column prop="Account" label="账户名" width="90" />
         <el-table-column prop="UserName" label="用户名" width="90" />
@@ -388,7 +406,7 @@ onMounted(() => {
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
         <el-table-column fixed="right" label="操作" width="180" align="center">
-          <template #default="row">
+          <template #default="{ row }">
             <el-button
               link
               type="primary"
