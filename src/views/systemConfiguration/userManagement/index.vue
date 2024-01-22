@@ -39,6 +39,7 @@ const updateTimeQuery = ref(null);
 const userList = ref([]);
 const totalCountUser = ref(0);
 const groupList = ref([]);
+const multipleSelectionUser = ref([]);
 
 const userListLoading = ref(false);
 
@@ -107,7 +108,8 @@ function handleFilter() {
         const group = groupList.value.find(group => group.Id === item.GroupId);
         return {
           ...item,
-          GroupName: group ? group.GroupName : item.GroupId
+          GroupName:
+            item.GroupId === 0 ? "" : group ? group.GroupName : item.GroupId
         };
       });
       totalCountUser.value = res.Data.TotalCount;
@@ -146,9 +148,7 @@ function handleQueryReset() {
 
 function setGroupList() {
   getGroupList({}).then(response => {
-    groupList.value = response.Data.map(item => {
-      return item;
-    });
+    groupList.value = response.Data.map(item => item);
   });
 }
 
@@ -167,14 +167,9 @@ function closeDialogForm() {
 }
 
 function userFormReset() {
-  userForm.value.Account = undefined;
-  userForm.value.UserName = undefined;
-  userForm.value.Email = undefined;
-  userForm.value.GroupId = undefined;
-  userForm.value.PassWord = undefined;
-  userForm.value.RoleId = undefined;
-  userForm.value.Id = undefined;
-  userForm.value.State = undefined;
+  Object.keys(userForm.value).forEach(key => {
+    userForm.value[key] = undefined;
+  });
 }
 
 function handleCreateUser() {
@@ -209,6 +204,9 @@ function createUserForm() {
 
 function handleUpdateUser(row) {
   userForm.value = Object.assign({}, row);
+  if (userForm.value.GroupId == 0) {
+    userForm.value.GroupId = undefined;
+  }
   dialogStatus.value = "编辑用户";
   userRule.PassWord[0].required = false;
   userRule.State[0].required = true;
@@ -235,7 +233,7 @@ function updateUserForm() {
 }
 
 function handleBatchDeleteUser() {
-  const selectedUsers = userList.value.filter(user => user.selected);
+  const selectedUsers = multipleSelectionUser.value;
   if (selectedUsers.length === 0) {
     ElMessage.warning("请选择要删除的用户");
     return;
@@ -244,15 +242,23 @@ function handleBatchDeleteUser() {
   const userIds = selectedUsers.map(user => user.Id);
   deleteUser(userIds).then(res => {
     if (res.IsSuccess) {
-      // 从userList中移除已删除的用户
+      // 从 userList 中移除已删除的用户
       userList.value = userList.value.filter(
         user => !userIds.includes(user.Id)
       );
-      ElMessage.success("批量删除成功");
+      ElMessage.success("操作成功");
     } else {
       ElMessage.error(res.Msg);
     }
   });
+}
+
+function handleListQueryClearUndefined(field: keyof typeof listQuery.value) {
+  listQuery.value[field] = undefined;
+}
+
+function handleUserFormClearUndefined(field: keyof typeof userForm.value) {
+  userForm.value[field] = undefined;
 }
 
 onMounted(() => {
@@ -269,6 +275,7 @@ onMounted(() => {
           v-model="listQuery.Account"
           @keyup.enter="handleFilter"
           style="width: 120px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="用户名:">
@@ -276,6 +283,7 @@ onMounted(() => {
           v-model="listQuery.UserName"
           @keyup.enter="handleFilter"
           style="width: 120px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="邮箱:">
@@ -283,6 +291,7 @@ onMounted(() => {
           v-model="listQuery.Email"
           @keyup.enter="handleFilter"
           style="width: 180px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="选择分组:">
@@ -290,6 +299,8 @@ onMounted(() => {
           v-model="listQuery.GroupId"
           placeholder="请选择"
           style="width: 120px"
+          clearable
+          @clear="handleListQueryClearUndefined('GroupId')"
         >
           <el-option
             v-for="option in groupList"
@@ -304,6 +315,8 @@ onMounted(() => {
           v-model="listQuery.RoleId"
           placeholder="请选择"
           style="width: 120px"
+          clearable
+          @clear="handleListQueryClearUndefined('RoleId')"
         >
           <el-option
             v-for="option in roleOptions"
@@ -318,6 +331,8 @@ onMounted(() => {
           v-model="listQuery.State"
           placeholder="请选择"
           style="width: 120px"
+          clearable
+          @clear="handleListQueryClearUndefined('State')"
         >
           <el-option
             v-for="option in stateOptions"
@@ -332,6 +347,7 @@ onMounted(() => {
           v-model="listQuery.CreateBy"
           placeholder="请选择"
           style="width: 120px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="创建时间:">
@@ -344,6 +360,7 @@ onMounted(() => {
           format="YYYY/MM/DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="最后修改人:">
@@ -351,6 +368,7 @@ onMounted(() => {
           v-model="listQuery.UpdateBy"
           placeholder="请选择"
           style="width: 120px"
+          clearable
         />
       </el-form-item>
       <el-form-item label="最后修改时间:">
@@ -363,6 +381,7 @@ onMounted(() => {
           format="YYYY/MM/DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
+          clearable
         />
       </el-form-item>
       <el-form-item>
@@ -412,7 +431,7 @@ onMounted(() => {
         v-loading="userListLoading"
         border
         style="width: 100%"
-        @selection-change="handleSelectionChange"
+        v-model:selected-keys="multipleSelectionUser"
       >
         <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
@@ -478,13 +497,13 @@ onMounted(() => {
           style="max-width: 460px"
         >
           <el-form-item label="账户名:" prop="Account">
-            <el-input v-model="userForm.Account" />
+            <el-input v-model="userForm.Account" clearable />
           </el-form-item>
           <el-form-item label="用户名:" prop="UserName">
-            <el-input v-model="userForm.UserName" />
+            <el-input v-model="userForm.UserName" clearable />
           </el-form-item>
           <el-form-item label="邮箱:" prop="Email">
-            <el-input v-model="userForm.Email" />
+            <el-input v-model="userForm.Email" clearable />
           </el-form-item>
           <el-form-item label="密码:" prop="PassWord">
             <el-input
@@ -494,7 +513,12 @@ onMounted(() => {
             />
           </el-form-item>
           <el-form-item label="选择分组:" prop="GroupId">
-            <el-select v-model="userForm.GroupId" placeholder="请选择">
+            <el-select
+              v-model="userForm.GroupId"
+              placeholder="请选择"
+              clearable
+              @clear="handleUserFormClearUndefined('GroupId')"
+            >
               <el-option
                 v-for="option in groupList"
                 :key="option.Id"
@@ -504,7 +528,12 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="选择角色:" prop="RoleId">
-            <el-select v-model="userForm.RoleId" placeholder="请选择">
+            <el-select
+              v-model="userForm.RoleId"
+              placeholder="请选择"
+              clearable
+              @clear="handleUserFormClearUndefined('RoleId')"
+            >
               <el-option
                 v-for="option in roleOptions"
                 :key="option.value"
@@ -514,7 +543,12 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="选择状态:" prop="State">
-            <el-select v-model="userForm.State" placeholder="请选择">
+            <el-select
+              v-model="userForm.State"
+              placeholder="请选择"
+              clearable
+              @clear="handleUserFormClearUndefined('State')"
+            >
               <el-option
                 v-for="option in stateOptions"
                 :key="option.id"
