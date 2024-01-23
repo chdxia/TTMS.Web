@@ -27,20 +27,20 @@ const listQuery = ref({
 });
 const createTimeQuery = ref(null);
 const updateTimeQuery = ref(null);
-const groupList = ref([]);
-const totalCountGroup = ref(0);
-const multipleSelectionGroup = ref([]);
-const groupListLoading = ref(false);
+const list = ref([]);
+const totalCount = ref(0);
+const multipleSelection = ref([]);
+const listLoading = ref(false);
 const dialogFormVisible = ref(false);
 const dialogStatus = ref("");
-const groupFormRef = ref<FormInstance>();
-const groupForm = ref({
+const formRef = ref<FormInstance>();
+const form = ref({
   GroupName: undefined,
   Id: undefined
 });
 
 function handleFilter() {
-  groupListLoading.value = true;
+  listLoading.value = true;
   if (createTimeQuery.value == null) {
     listQuery.value.CreateTimeStart = undefined;
     listQuery.value.CreateTimeEnd = undefined;
@@ -57,14 +57,14 @@ function handleFilter() {
   }
   getGroupPageList(listQuery.value).then(res => {
     if (res.IsSuccess) {
-      groupList.value = res.Data.Items.map(item => item);
-      totalCountGroup.value = res.Data.TotalCount;
+      list.value = res.Data.Items.map(item => item);
+      totalCount.value = res.Data.TotalCount;
       setTimeout(() => {
-        groupListLoading.value = false;
+        listLoading.value = false;
       }, 0.3 * 1000);
     } else {
       ElMessage.error(res.Msg);
-      groupListLoading.value = false;
+      listLoading.value = false;
     }
   });
 }
@@ -89,28 +89,28 @@ function handleQueryReset() {
 
 function closeDialogForm() {
   dialogFormVisible.value = false;
-  groupFormReset();
+  handleResetForm();
 }
 
-function groupFormReset() {
-  Object.keys(groupForm.value).forEach(key => {
-    groupForm.value[key] = undefined;
+function handleResetForm() {
+  Object.keys(form.value).forEach(key => {
+    form.value[key] = undefined;
   });
 }
 
 function handleCreateGroup() {
-  groupFormReset();
+  handleResetForm();
   dialogStatus.value = "新建分组";
   dialogFormVisible.value = true;
 }
 
-function createGroupForm() {
-  groupFormRef.value.validate(valid => {
+function runCreateGroup() {
+  formRef.value.validate(valid => {
     if (valid) {
-      createGroup(groupForm.value).then(res => {
+      createGroup(form.value).then(res => {
         if (res.IsSuccess) {
           dialogFormVisible.value = false;
-          groupList.value.unshift(groupForm);
+          list.value.unshift(form);
           ElMessage.success("操作成功");
         } else {
           ElMessage.error(res.Msg);
@@ -121,21 +121,19 @@ function createGroupForm() {
 }
 
 function handleUpdateGroup(row) {
-  groupForm.value = Object.assign({}, row);
+  form.value = Object.assign({}, row);
   dialogStatus.value = "编辑分组";
   dialogFormVisible.value = true;
 }
 
-function updateGroupForm() {
-  groupFormRef.value.validate(valid => {
+function runUpdateGroup() {
+  formRef.value.validate(valid => {
     if (valid) {
-      updateGroup(groupForm.value).then(res => {
+      updateGroup(form.value).then(res => {
         if (res.IsSuccess) {
           dialogFormVisible.value = false;
-          const index = groupList.value.findIndex(
-            v => v.Id === groupForm.value.Id
-          );
-          groupList.value.splice(index, 1, groupForm.value);
+          const index = list.value.findIndex(v => v.Id === form.value.Id);
+          list.value.splice(index, 1, form.value);
           ElMessage.success("操作成功");
         } else {
           ElMessage.error(res.Msg);
@@ -146,7 +144,7 @@ function updateGroupForm() {
 }
 
 function handleBatchDeleteGroup() {
-  const selectedGroups = multipleSelectionGroup.value;
+  const selectedGroups = multipleSelection.value;
   if (selectedGroups.length === 0) {
     ElMessage.warning("请选择要删除的分组");
     return;
@@ -154,9 +152,7 @@ function handleBatchDeleteGroup() {
   const groupIds = selectedGroups.map(group => group.Id);
   deleteGroup(groupIds).then(res => {
     if (res.IsSuccess) {
-      groupList.value = groupList.value.filter(
-        group => !groupIds.includes(group.Id)
-      );
+      list.value = list.value.filter(group => !groupIds.includes(group.Id));
       ElMessage.success("操作成功");
     } else {
       ElMessage.error(res.Msg);
@@ -258,18 +254,18 @@ onMounted(() => {
         :disabled="false"
         :background="true"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="totalCountGroup"
+        :total="totalCount"
         @size-change="handleFilter()"
         @current-change="handleFilter()"
       />
     </div>
     <div>
       <el-table
-        :data="groupList"
-        v-loading="groupListLoading"
+        :data="list"
+        v-loading="listLoading"
         border
         style="width: 100%"
-        v-model:selected-keys="multipleSelectionGroup"
+        v-model:selected-keys="multipleSelection"
       >
         <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
@@ -299,13 +295,13 @@ onMounted(() => {
         width="600px"
       >
         <el-form
-          ref="groupFormRef"
-          :model="groupForm"
+          ref="formRef"
+          :model="form"
           label-width="140px"
           style="max-width: 460px"
         >
           <el-form-item label="组名:" prop="GroupName">
-            <el-input v-model="groupForm.GroupName" clearable />
+            <el-input v-model="form.GroupName" clearable />
           </el-form-item>
           <div style="text-align: right">
             <el-button @click="closeDialogForm()">取消</el-button>
@@ -313,8 +309,8 @@ onMounted(() => {
               type="primary"
               @click="
                 dialogStatus === '新建分组'
-                  ? createGroupForm()
-                  : updateGroupForm()
+                  ? runCreateGroup()
+                  : runUpdateGroup()
               "
               >确定</el-button
             >

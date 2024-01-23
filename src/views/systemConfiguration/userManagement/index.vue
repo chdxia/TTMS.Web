@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from "vue";
+import { ElMessage, FormRules, FormInstance } from "element-plus";
+import { RoleType } from "@/enums/UserEnums";
+import { getGroupList } from "@/api/group";
 import {
   getUserPageList,
   getUserList,
@@ -7,9 +10,6 @@ import {
   updateUser,
   deleteUser
 } from "@/api/user";
-import { getGroupList } from "@/api/group";
-import { RoleType } from "@/enums/RoleType";
-import { ElMessage, FormRules, FormInstance } from "element-plus";
 
 defineOptions({
   name: "UserManagement"
@@ -35,19 +35,31 @@ const listQuery = ref({
 });
 const createTimeQuery = ref(null);
 const updateTimeQuery = ref(null);
-
-const userList = ref([]);
-const totalCountUser = ref(0);
+const list = ref([]);
+const totalCount = ref(0);
 const groupList = ref([]);
-const multipleSelectionUser = ref([]);
-
-const userListLoading = ref(false);
-
+const multipleSelection = ref([]);
+const listLoading = ref(false);
 const dialogFormVisible = ref(false);
-
 const dialogStatus = ref("");
+const formRef = ref<FormInstance>();
+const form = ref({
+  Id: undefined,
+  Account: undefined,
+  UserName: undefined,
+  Email: undefined,
+  GroupId: undefined,
+  PassWord: undefined,
+  RoleId: undefined,
+  State: undefined
+});
 
-const roleOptions = computed(() => {
+const userStateOptions = [
+  { id: 1, value: true, text: "已启用" },
+  { id: 2, value: false, text: "已禁用" }
+];
+
+const roleTypeOptions = computed(() => {
   const options = [];
   for (const key in RoleType) {
     if (isNaN(Number(key))) {
@@ -60,25 +72,7 @@ const roleOptions = computed(() => {
   return options;
 });
 
-const stateOptions = [
-  { id: 1, value: true, text: "已启用" },
-  { id: 2, value: false, text: "已禁用" }
-];
-
-const userFormRef = ref<FormInstance>();
-
-const userForm = ref({
-  Account: undefined,
-  UserName: undefined,
-  Email: undefined,
-  GroupId: undefined,
-  PassWord: undefined,
-  RoleId: undefined,
-  Id: undefined,
-  State: undefined
-});
-
-const userRule = reactive<FormRules<typeof userForm>>({
+const userRule = reactive<FormRules<typeof form>>({
   Account: [{ required: true, message: "请输入账号", trigger: "blur" }],
   Email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
   PassWord: [{ required: true, message: "请输入密码", trigger: "blur" }],
@@ -87,7 +81,7 @@ const userRule = reactive<FormRules<typeof userForm>>({
 });
 
 function handleFilter() {
-  userListLoading.value = true;
+  listLoading.value = true;
   if (createTimeQuery.value == null) {
     listQuery.value.CreateTimeStart = undefined;
     listQuery.value.CreateTimeEnd = undefined;
@@ -104,7 +98,7 @@ function handleFilter() {
   }
   getUserPageList(listQuery.value).then(res => {
     if (res.IsSuccess) {
-      userList.value = res.Data.Items.map(item => {
+      list.value = res.Data.Items.map(item => {
         const group = groupList.value.find(group => group.Id === item.GroupId);
         return {
           ...item,
@@ -112,13 +106,13 @@ function handleFilter() {
             item.GroupId === 0 ? "" : group ? group.GroupName : item.GroupId
         };
       });
-      totalCountUser.value = res.Data.TotalCount;
+      totalCount.value = res.Data.TotalCount;
       setTimeout(() => {
-        userListLoading.value = false;
+        listLoading.value = false;
       }, 0.3 * 1000);
     } else {
       ElMessage.error(res.Msg);
-      userListLoading.value = false;
+      listLoading.value = false;
     }
   });
 }
@@ -147,13 +141,13 @@ function handleQueryReset() {
 }
 
 function setGroupList() {
-  getGroupList({}).then(response => {
-    groupList.value = response.Data.map(item => item);
+  getGroupList({}).then(res => {
+    groupList.value = res.Data.map(item => item);
   });
 }
 
 function getStateText(state) {
-  const option = stateOptions.find(option => option.value === state);
+  const option = userStateOptions.find(option => option.value === state);
   return option ? option.text : "";
 }
 
@@ -161,36 +155,36 @@ function getStateClass(state) {
   return state ? "state-enabled" : "state-disabled";
 }
 
-function closeDialogForm() {
-  dialogFormVisible.value = false;
-  userFormReset();
-}
-
-function userFormReset() {
-  Object.keys(userForm.value).forEach(key => {
-    userForm.value[key] = undefined;
+function handleResetForm() {
+  Object.keys(form.value).forEach(key => {
+    form.value[key] = undefined;
   });
 }
 
+function closeDialogForm() {
+  dialogFormVisible.value = false;
+  handleResetForm();
+}
+
 function handleCreateUser() {
-  userFormReset();
+  handleResetForm();
   dialogStatus.value = "新建用户";
   userRule.PassWord[0].required = true;
   userRule.State[0].required = false;
   dialogFormVisible.value = true;
 }
 
-function createUserForm() {
-  userFormRef.value.validate(valid => {
+function runCreateUser() {
+  formRef.value.validate(valid => {
     if (valid) {
-      createUser(userForm.value).then(res => {
+      createUser(form.value).then(res => {
         if (res.IsSuccess) {
           dialogFormVisible.value = false;
           const query = { Account: this.userForm.Account };
           getUserList(query).then(res => {
             if (res.IsSuccess) {
               const user = res.Data[0];
-              userList.value.unshift(user);
+              list.value.unshift(user);
             }
           });
           ElMessage.success("操作成功");
@@ -203,9 +197,9 @@ function createUserForm() {
 }
 
 function handleUpdateUser(row) {
-  userForm.value = Object.assign({}, row);
-  if (userForm.value.GroupId == 0) {
-    userForm.value.GroupId = undefined;
+  form.value = Object.assign({}, row);
+  if (form.value.GroupId == 0) {
+    form.value.GroupId = undefined;
   }
   dialogStatus.value = "编辑用户";
   userRule.PassWord[0].required = false;
@@ -213,16 +207,14 @@ function handleUpdateUser(row) {
   dialogFormVisible.value = true;
 }
 
-function updateUserForm() {
-  userFormRef.value.validate(valid => {
+function runUpdateUser() {
+  formRef.value.validate(valid => {
     if (valid) {
-      updateUser(userForm.value).then(res => {
+      updateUser(form.value).then(res => {
         if (res.IsSuccess) {
           dialogFormVisible.value = false;
-          const index = userList.value.findIndex(
-            v => v.Id === userForm.value.Id
-          );
-          userList.value.splice(index, 1, userForm.value);
+          const index = list.value.findIndex(v => v.Id === form.value.Id);
+          list.value.splice(index, 1, form.value);
           ElMessage.success("操作成功");
         } else {
           ElMessage.error(res.Msg);
@@ -233,19 +225,15 @@ function updateUserForm() {
 }
 
 function handleBatchDeleteUser() {
-  const selectedUsers = multipleSelectionUser.value;
+  const selectedUsers = multipleSelection.value;
   if (selectedUsers.length === 0) {
     ElMessage.warning("请选择要删除的用户");
     return;
   }
-
   const userIds = selectedUsers.map(user => user.Id);
   deleteUser(userIds).then(res => {
     if (res.IsSuccess) {
-      // 从 userList 中移除已删除的用户
-      userList.value = userList.value.filter(
-        user => !userIds.includes(user.Id)
-      );
+      list.value = list.value.filter(user => !userIds.includes(user.Id));
       ElMessage.success("操作成功");
     } else {
       ElMessage.error(res.Msg);
@@ -253,12 +241,12 @@ function handleBatchDeleteUser() {
   });
 }
 
-function handleListQueryClearUndefined(field: keyof typeof listQuery.value) {
+function handleClearListQueryToUndefined(field: keyof typeof listQuery.value) {
   listQuery.value[field] = undefined;
 }
 
-function handleUserFormClearUndefined(field: keyof typeof userForm.value) {
-  userForm.value[field] = undefined;
+function handleClearFormToUndefined(field: keyof typeof form.value) {
+  form.value[field] = undefined;
 }
 
 onMounted(() => {
@@ -300,7 +288,7 @@ onMounted(() => {
           placeholder="请选择"
           style="width: 120px"
           clearable
-          @clear="handleListQueryClearUndefined('GroupId')"
+          @clear="handleClearListQueryToUndefined('GroupId')"
         >
           <el-option
             v-for="option in groupList"
@@ -316,10 +304,10 @@ onMounted(() => {
           placeholder="请选择"
           style="width: 120px"
           clearable
-          @clear="handleListQueryClearUndefined('RoleId')"
+          @clear="handleClearListQueryToUndefined('RoleId')"
         >
           <el-option
-            v-for="option in roleOptions"
+            v-for="option in roleTypeOptions"
             :key="option.value"
             :label="option.label"
             :value="option.value"
@@ -332,10 +320,10 @@ onMounted(() => {
           placeholder="请选择"
           style="width: 120px"
           clearable
-          @clear="handleListQueryClearUndefined('State')"
+          @clear="handleClearListQueryToUndefined('State')"
         >
           <el-option
-            v-for="option in stateOptions"
+            v-for="option in userStateOptions"
             :key="option.id"
             :label="option.text"
             :value="option.value"
@@ -420,18 +408,18 @@ onMounted(() => {
         :disabled="false"
         :background="true"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="totalCountUser"
+        :total="totalCount"
         @size-change="handleFilter()"
         @current-change="handleFilter()"
       />
     </div>
     <div>
       <el-table
-        :data="userList"
-        v-loading="userListLoading"
+        :data="list"
+        v-loading="listLoading"
         border
         style="width: 100%"
-        v-model:selected-keys="multipleSelectionUser"
+        v-model:selected-keys="multipleSelection"
       >
         <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
@@ -490,34 +478,30 @@ onMounted(() => {
         width="600px"
       >
         <el-form
-          ref="userFormRef"
-          :model="userForm"
+          ref="formRef"
+          :model="form"
           :rules="userRule"
           label-width="140px"
           style="max-width: 460px"
         >
           <el-form-item label="账户名:" prop="Account">
-            <el-input v-model="userForm.Account" clearable />
+            <el-input v-model="form.Account" clearable />
           </el-form-item>
           <el-form-item label="用户名:" prop="UserName">
-            <el-input v-model="userForm.UserName" clearable />
+            <el-input v-model="form.UserName" clearable />
           </el-form-item>
           <el-form-item label="邮箱:" prop="Email">
-            <el-input v-model="userForm.Email" clearable />
+            <el-input v-model="form.Email" clearable />
           </el-form-item>
           <el-form-item label="密码:" prop="PassWord">
-            <el-input
-              v-model="userForm.PassWord"
-              type="password"
-              show-password
-            />
+            <el-input v-model="form.PassWord" type="password" show-password />
           </el-form-item>
           <el-form-item label="选择分组:" prop="GroupId">
             <el-select
-              v-model="userForm.GroupId"
+              v-model="form.GroupId"
               placeholder="请选择"
               clearable
-              @clear="handleUserFormClearUndefined('GroupId')"
+              @clear="handleClearFormToUndefined('GroupId')"
             >
               <el-option
                 v-for="option in groupList"
@@ -529,13 +513,13 @@ onMounted(() => {
           </el-form-item>
           <el-form-item label="选择角色:" prop="RoleId">
             <el-select
-              v-model="userForm.RoleId"
+              v-model="form.RoleId"
               placeholder="请选择"
               clearable
-              @clear="handleUserFormClearUndefined('RoleId')"
+              @clear="handleClearFormToUndefined('RoleId')"
             >
               <el-option
-                v-for="option in roleOptions"
+                v-for="option in roleTypeOptions"
                 :key="option.value"
                 :label="option.label"
                 :value="option.value"
@@ -544,13 +528,13 @@ onMounted(() => {
           </el-form-item>
           <el-form-item label="选择状态:" prop="State">
             <el-select
-              v-model="userForm.State"
+              v-model="form.State"
               placeholder="请选择"
               clearable
-              @clear="handleUserFormClearUndefined('State')"
+              @clear="handleClearFormToUndefined('State')"
             >
               <el-option
-                v-for="option in stateOptions"
+                v-for="option in userStateOptions"
                 :key="option.id"
                 :label="option.text"
                 :value="option.value"
@@ -562,9 +546,7 @@ onMounted(() => {
             <el-button
               type="primary"
               @click="
-                dialogStatus === '新建用户'
-                  ? createUserForm()
-                  : updateUserForm()
+                dialogStatus === '新建用户' ? runCreateUser() : runUpdateUser()
               "
               >确定</el-button
             >

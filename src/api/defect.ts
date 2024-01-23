@@ -12,23 +12,16 @@ export const getDefectPageList = (data?: object) => {
   );
 };
 
-// 新增版本
+// 新增缺陷
 export const createDefect = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("Defect/CreateDefect"), {
     data
   });
 };
 
-// 编辑版本
+// 编辑缺陷
 export const updateDefect = (data?: object) => {
   return http.request<Result>("post", baseUrlApi("Defect/UpdateDefect"), {
-    data
-  });
-};
-
-// 批量删除版本
-export const deleteDefect = (data?: object) => {
-  return http.request<Result>("delete", baseUrlApi("Defect/DeleteDefect"), {
     data
   });
 };
