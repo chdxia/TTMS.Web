@@ -17,6 +17,6 @@ export enum DemandState {
 
 export enum DemandType {
   项目需求 = 0,
-  项目缺陷 = 1,
-  非项目需求 = 2
+  项目BUG = 1,
+  非项目任务 = 2
 }

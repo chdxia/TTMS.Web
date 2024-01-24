@@ -2,7 +2,7 @@ export default {
   path: "/defect",
   meta: {
     title: "BUG管理",
-    rank: 3
+    rank: 2
   },
   children: [
     {

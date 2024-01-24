@@ -2,7 +2,7 @@ export default {
   path: "/versionInfo",
   meta: {
     title: "版本管理",
-    rank: 2
+    rank: 3
   },
   children: [
     {

@@ -2,7 +2,9 @@
 import { ref, computed, onMounted, reactive } from "vue";
 import { ElMessage, FormRules, FormInstance } from "element-plus";
 import { DemandType, DemandState, DemandPriority } from "@/enums/DemandEnums";
+import { DefectType, DefectState } from "@/enums/DefectEnums";
 import { getGroupList } from "@/api/group";
+import { getDefectList, createDefect } from "@/api/defect";
 import {
   getDemandPageList,
   createDemand,
@@ -50,9 +52,13 @@ const actualOnlineTimeQuery = ref(null);
 const list = ref([]);
 const totalCount = ref(0);
 const groupList = ref([]);
+const defectList = ref([]);
 const multipleSelection = ref([]);
 const listLoading = ref(false);
+const defectListLoading = ref(false);
 const dialogFormVisible = ref(false);
+const dialogDefectTableVisible = ref(false);
+const dialogDefectFormVisible = ref(false);
 const dialogStatus = ref("");
 const formRef = ref<FormInstance>();
 const form = ref({
@@ -73,6 +79,15 @@ const form = ref({
   ActualOnlineTime: undefined,
   VersionInfoIds: undefined,
   DemandState: undefined
+});
+const defectFormRef = ref<FormInstance>();
+const defectForm = ref({
+  Id: undefined,
+  DemandId: undefined,
+  Title: undefined,
+  Description: undefined,
+  DefectType: undefined,
+  DefectDetailDescription: undefined
 });
 
 const demandTypeOptions = computed(() => {
@@ -114,12 +129,29 @@ const demandStateOptions = computed(() => {
   return options;
 });
 
+const defectTypeOptions = computed(() => {
+  const options = [];
+  for (const key in DefectType) {
+    if (isNaN(Number(key))) {
+      options.push({
+        label: key,
+        value: DefectType[key]
+      });
+    }
+  }
+  return options;
+});
+
 const demandRule = reactive<FormRules<typeof form>>({
   GroupId: [{ required: true, message: "请选择分组", trigger: "blur" }],
   DemandType: [{ required: true, message: "请选择需求类型", trigger: "blur" }],
   ProposeTime: [
     { required: true, message: "请选择需求提出时间", trigger: "blur" }
   ]
+});
+
+const defectRule = reactive<FormRules<typeof defectForm>>({
+  DefectType: [{ required: true, message: "请选择严重等级", trigger: "blur" }]
 });
 
 function handleFilter() {
@@ -173,6 +205,25 @@ function handleFilter() {
   });
 }
 
+function handleDefectFilter(row) {
+  const defectListQuery = {
+    DemandId: row.Id
+  };
+  dialogDefectTableVisible.value = true;
+  defectListLoading.value = true;
+  getDefectList(defectListQuery).then(res => {
+    if (res.IsSuccess) {
+      defectList.value = res.Data.map(item => item);
+      setTimeout(() => {
+        defectListLoading.value = false;
+      }, 0.3 * 1000);
+    } else {
+      ElMessage.error(res.Msg);
+      defectListLoading.value = false;
+    }
+  });
+}
+
 function handleQueryReset() {
   listQuery.value = {
     Id: undefined,
@@ -218,9 +269,24 @@ function handleResetForm() {
   });
 }
 
+function handleResetDefectForm() {
+  Object.keys(form.value).forEach(key => {
+    form.value[key] = undefined;
+  });
+}
+
 function closeDialogForm() {
   dialogFormVisible.value = false;
   handleResetForm();
+}
+
+function closeDialogDefectTable() {
+  dialogDefectTableVisible.value = false;
+}
+
+function closeDialogDefectForm() {
+  dialogDefectFormVisible.value = false;
+  handleResetDefectForm();
 }
 
 function handleCreateDemand() {
@@ -287,12 +353,38 @@ function handleBatchDeleteDemand() {
   });
 }
 
+function handleCreateDefect() {
+  handleResetDefectForm();
+  dialogDefectFormVisible.value = true;
+}
+
+function runCreateDefect() {
+  defectFormRef.value.validate(valid => {
+    if (valid) {
+      createDefect(defectForm.value).then(res => {
+        if (res.IsSuccess) {
+          dialogDefectFormVisible.value = false;
+          ElMessage.success("操作成功");
+        } else {
+          ElMessage.error(res.Msg);
+        }
+      });
+    }
+  });
+}
+
 function handleClearListQueryToUndefined(field: keyof typeof listQuery.value) {
   listQuery.value[field] = undefined;
 }
 
 function handleClearFormToUndefined(field: keyof typeof form.value) {
   form.value[field] = undefined;
+}
+
+function handleClearDefectFormToUndefined(
+  field: keyof typeof defectForm.value
+) {
+  defectForm.value[field] = undefined;
 }
 
 onMounted(() => {
@@ -364,7 +456,7 @@ onMounted(() => {
         <el-date-picker
           v-model="listQuery.ProposeTimeStart"
           placeholder="请选择"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -425,7 +517,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -438,7 +530,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -467,7 +559,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -488,7 +580,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -581,12 +673,13 @@ onMounted(() => {
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="120" />
         <el-table-column fixed="right" label="操作" width="120">
-          <template #default="row">
+          <template #default="{ row }">
             <el-button
               link
               type="primary"
               size="small"
-              @click="handleUpdateDemand(row)"
+              @click="handleDefectFilter(row)"
+              style="color: red"
               >BUG待处理</el-button
             >
             <el-button
@@ -660,7 +753,14 @@ onMounted(() => {
             <el-input v-model="form.ProposerName" clearable />
           </el-form-item>
           <el-form-item label="提出时间:" prop="ProposeTime">
-            <el-input v-model="form.ProposeTime" clearable />
+            <el-date-picker
+              v-model="form.ProposeTime"
+              placeholder="请选择"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 220px"
+              clearable
+            />
           </el-form-item>
           <el-form-item label="优先级:" prop="DemandPriority">
             <el-select
@@ -683,20 +783,30 @@ onMounted(() => {
           <el-form-item label="测试:" prop="Tester">
             <el-input v-model="form.Tester" clearable />
           </el-form-item>
-
           <el-form-item label="工时:" prop="WorkHours">
             <el-input v-model="form.WorkHours" clearable />
           </el-form-item>
-
           <el-form-item label="预计上线时间:" prop="PlanOnlineTime">
-            <el-input v-model="form.PlanOnlineTime" clearable />
+            <el-date-picker
+              v-model="form.PlanOnlineTime"
+              placeholder="请选择"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 220px"
+              clearable
+            />
           </el-form-item>
-
           <el-form-item label="实际上线时间:" prop="ActualOnlineTime">
-            <el-input v-model="form.PlanOnlineTime" clearable />
+            <el-date-picker
+              v-model="form.ActualOnlineTime"
+              placeholder="请选择"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 220px"
+              clearable
+            />
           </el-form-item>
-
-          <el-form-item label="版本号:" prop="VersionInfoIds">
+          <el-form-item label="关联版本:" prop="VersionInfoIds">
             <el-input v-model="form.PlanOnlineTime" clearable />
           </el-form-item>
           <div style="text-align: right">
@@ -708,6 +818,104 @@ onMounted(() => {
                   ? runCreateDemand()
                   : runUpdateDemand()
               "
+              >确定</el-button
+            >
+          </div>
+        </el-form>
+      </el-dialog>
+    </div>
+    <div>
+      <el-dialog
+        v-model="dialogDefectTableVisible"
+        :before-close="closeDialogDefectTable"
+        width="1000px"
+      >
+        <div style="display: flex; align-items: center">
+          <el-button type="primary" @click="handleCreateDefect()"
+            >新增BUG</el-button
+          >
+        </div>
+        <div>
+          <el-table
+            :data="defectList"
+            v-loading="defectListLoading"
+            border
+            style="width: 100%"
+          >
+            <el-table-column prop="Id" label="序号" width="60" />
+            <el-table-column prop="Title" label="BUG标题" width="90" />
+            <el-table-column prop="Description" label="BUG描述" width="90" />
+            <el-table-column prop="Description" label="附件" width="90" />
+            <el-table-column prop="DefectType" label="严重程度" width="90">
+              <template #default="{ row }">
+                {{ DefectType[row.DefectType] }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="DefectState" label="BUG状态" width="90">
+              <template #default="{ row }">
+                {{ DefectState[row.DefectState] }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="CreateBy" label="创建人" width="90" />
+            <el-table-column prop="CreateTime" label="创建时间" width="180" />
+            <el-table-column
+              fixed="right"
+              label="操作"
+              width="180"
+              align="center"
+            >
+              <template #default="{ row }">
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="handleCreateDefect()"
+                  >编辑</el-button
+                >
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-dialog>
+    </div>
+    <div>
+      <el-dialog
+        v-model="dialogDefectFormVisible"
+        title="新增BUG"
+        :before-close="closeDialogDefectForm"
+        width="600px"
+      >
+        <el-form
+          ref="defectFormRef"
+          :model="defectForm"
+          :rules="defectRule"
+          label-width="140px"
+          style="max-width: 460px"
+        >
+          <el-form-item label="BUG标题:" prop="Title">
+            <el-input v-model="defectForm.Title" clearable />
+          </el-form-item>
+          <el-form-item label="BUG描述:" prop="Description">
+            <el-input v-model="defectForm.Description" clearable />
+          </el-form-item>
+          <el-form-item label="严重程度:" prop="DefectType">
+            <el-select
+              v-model="defectForm.DefectType"
+              placeholder="请选择"
+              clearable
+              @clear="handleClearDefectFormToUndefined('DefectType')"
+            >
+              <el-option
+                v-for="option in defectTypeOptions"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+          <div style="text-align: right">
+            <el-button @click="closeDialogDefectForm()">取消</el-button>
+            <el-button type="primary" @click="runCreateDefect()"
               >确定</el-button
             >
           </div>

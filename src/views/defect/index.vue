@@ -292,7 +292,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -313,7 +313,7 @@ onMounted(() => {
           range-separator="-"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          format="YYYY/MM/DD"
+          format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
           style="width: 220px"
           clearable
@@ -433,9 +433,6 @@ onMounted(() => {
                 :value="option.value"
               />
             </el-select>
-          </el-form-item>
-          <el-form-item label="BUG状态修改说明:" prop="DefectDetailDescription">
-            <el-input v-model="form.DefectDetailDescription" clearable />
           </el-form-item>
           <div style="text-align: right">
             <el-button @click="closeDialogForm()">取消</el-button>

@@ -1,5 +1,12 @@
 import { http } from "@/utils/http";
-import { baseUrlApi, Result, PageListResult } from "./utils";
+import { baseUrlApi, Result, ListResult, PageListResult } from "./utils";
+
+// 获取缺陷列表
+export const getDefectList = (data?: object) => {
+  return http.request<ListResult>("post", baseUrlApi("Defect/GetList"), {
+    data
+  });
+};
 
 // 分页获取缺陷列表
 export const getDefectPageList = (data?: object) => {
