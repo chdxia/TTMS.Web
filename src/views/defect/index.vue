@@ -4,6 +4,7 @@ import { ElMessage, FormRules, FormInstance } from "element-plus";
 import { DefectType, DefectState } from "@/enums/DefectEnums";
 import { getGroupList } from "@/api/group";
 import { getDefectPageList, updateDefect } from "@/api/defect";
+import UserSelect from "@/components/UserSelect/index.vue";
 
 defineOptions({
   name: "Defect"
@@ -188,12 +189,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" class="query-form-inline">
       <el-form-item label="所属分组:">
         <el-select
           v-model="listQuery.GroupId"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('GroupId')"
         >
@@ -209,7 +209,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.ModuleName"
           @keyup.enter="handleFilter"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
@@ -217,7 +216,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.DemandName"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -225,7 +223,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.DeveloperId"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -233,7 +230,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.TesterId"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -241,7 +237,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.Title"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -249,7 +244,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.DefectType"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('DefectType')"
         >
@@ -265,7 +259,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.DefectState"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('DefectState')"
         >
@@ -278,12 +271,7 @@ onMounted(() => {
         </el-select>
       </el-form-item>
       <el-form-item label="创建人:">
-        <el-input
-          v-model="listQuery.CreateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <user-select @selected-user-id="listQuery.CreateBy" />
       </el-form-item>
       <el-form-item label="创建时间:">
         <el-date-picker
@@ -299,12 +287,7 @@ onMounted(() => {
         />
       </el-form-item>
       <el-form-item label="最后修改人:">
-        <el-input
-          v-model="listQuery.UpdateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.UpdateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="最后修改时间:">
         <el-date-picker
@@ -368,10 +351,10 @@ onMounted(() => {
           </template>
         </el-table-column>
         <el-table-column prop="CreateBy" label="创建人" width="90" />
-        <el-table-column prop="CreateTime" label="创建时间" width="90" />
+        <el-table-column prop="CreateTime" label="创建时间" width="180" />
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
-        <el-table-column prop="UpdateTime" label="最后修改时间" width="120" />
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
+        <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">
             <el-button
               link
@@ -445,3 +428,13 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+.query-form-inline .el-input {
+  width: 120px;
+}
+
+.query-form-inline .el-select {
+  width: 120px;
+}
+</style>

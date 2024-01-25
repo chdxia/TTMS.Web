@@ -395,12 +395,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" class="query-form-inline">
       <el-form-item label="所属分组:">
         <el-select
           v-model="listQuery.GroupId"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('GroupId')"
         >
@@ -416,7 +415,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.ModuleName"
           @keyup.enter="handleFilter"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
@@ -424,7 +422,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.DemandType"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('DemandType')"
         >
@@ -440,7 +437,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.DemandName"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -448,7 +444,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.ProposerName"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -458,7 +453,7 @@ onMounted(() => {
           placeholder="请选择"
           format="YYYY-MM-DD"
           value-format="YYYY-MM-DD"
-          style="width: 220px"
+          style="width: 120px"
           clearable
         />
       </el-form-item>
@@ -466,7 +461,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.DemandPriority"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('DemandPriority')"
         >
@@ -482,7 +476,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.DeveloperId"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -490,7 +483,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.TesterId"
           @keyup.enter="handleFilter"
-          style="width: 180px"
           clearable
         />
       </el-form-item>
@@ -498,7 +490,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.DemandState"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('DemandState')"
         >
@@ -540,17 +531,11 @@ onMounted(() => {
         <el-input
           v-model="listQuery.VersionNo"
           placeholder="请选择"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
       <el-form-item label="创建人:">
-        <el-input
-          v-model="listQuery.CreateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.CreateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="创建时间:">
         <el-date-picker
@@ -566,12 +551,7 @@ onMounted(() => {
         />
       </el-form-item>
       <el-form-item label="最后修改人:">
-        <el-input
-          v-model="listQuery.UpdateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.UpdateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="最后修改时间:">
         <el-date-picker
@@ -652,7 +632,7 @@ onMounted(() => {
         <el-table-column prop="Attachment" label="附件" width="90" />
         <el-table-column prop="Remark" label="备注" width="90" />
         <el-table-column prop="ProposerName" label="提出人" width="90" />
-        <el-table-column prop="ProposeTime" label="提出时间" width="90" />
+        <el-table-column prop="ProposeTime" label="提出时间" width="180" />
         <el-table-column prop="DemandPriority" label="优先级" width="90">
           <template #default="{ row }">
             {{ DemandPriority[row.DemandPriority] }}
@@ -666,20 +646,20 @@ onMounted(() => {
           </template>
         </el-table-column>
         <el-table-column prop="EstimatedHours" label="预计工时" width="90" />
-        <el-table-column prop="PlanOnlineTime" label="预计上线" width="90" />
-        <el-table-column prop="ActualOnlineTime" label="实际上线" width="90" />
+        <el-table-column prop="PlanOnlineTime" label="预计上线" width="180" />
+        <el-table-column prop="ActualOnlineTime" label="实际上线" width="180" />
         <el-table-column prop="CreateBy" label="创建人" width="90" />
-        <el-table-column prop="CreateTime" label="创建时间" width="90" />
+        <el-table-column prop="CreateTime" label="创建时间" width="180" />
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
-        <el-table-column prop="UpdateTime" label="最后修改时间" width="120" />
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
+        <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">
             <el-button
               link
               type="primary"
               size="small"
               @click="handleDefectFilter(row)"
-              style="color: red"
+              style="background-color: red; color: white"
               >BUG待处理</el-button
             >
             <el-button
@@ -924,3 +904,13 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+.query-form-inline .el-input {
+  width: 120px;
+}
+
+.query-form-inline .el-select {
+  width: 120px;
+}
+</style>

@@ -19,8 +19,6 @@ const listQuery = ref({
   Id: undefined,
   VertionTime: undefined,
   VersionNo: undefined,
-  GroupId: undefined,
-  VersionState: undefined,
   CreateBy: undefined,
   CreateTimeStart: undefined,
   CreateTimeEnd: undefined,
@@ -34,7 +32,6 @@ const createTimeQuery = ref(null);
 const updateTimeQuery = ref(null);
 const list = ref([]);
 const totalCount = ref(0);
-const groupList = ref([]);
 const multipleSelection = ref([]);
 const listLoading = ref(false);
 const dialogFormVisible = ref(false);
@@ -45,19 +42,6 @@ const form = ref({
   VersionTimeStart: undefined,
   VersionTimeEnd: undefined,
   VersionNo: undefined
-});
-
-const versionStateOptions = computed(() => {
-  const options = [];
-  for (const key in DemandState) {
-    if (isNaN(Number(key))) {
-      options.push({
-        label: key,
-        value: DemandState[key]
-      });
-    }
-  }
-  return options;
 });
 
 function handleFilter() {
@@ -78,14 +62,7 @@ function handleFilter() {
   }
   getVersionInfoPageList(listQuery.value).then(res => {
     if (res.IsSuccess) {
-      list.value = res.Data.Items.map(item => {
-        const group = groupList.value.find(group => group.Id === item.GroupId);
-        return {
-          ...item,
-          GroupName:
-            item.GroupId === 0 ? "" : group ? group.GroupName : item.GroupId
-        };
-      });
+      list.value = res.Data.Items.map(item => item);
       totalCount.value = res.Data.TotalCount;
       setTimeout(() => {
         listLoading.value = false;
@@ -102,8 +79,6 @@ function handleQueryReset() {
     Id: undefined,
     VertionTime: undefined,
     VersionNo: undefined,
-    GroupId: undefined,
-    VersionState: undefined,
     CreateBy: undefined,
     CreateTimeStart: undefined,
     CreateTimeEnd: undefined,
@@ -116,12 +91,6 @@ function handleQueryReset() {
   createTimeQuery.value = null;
   updateTimeQuery.value = null;
   handleFilter();
-}
-
-function setGroupList() {
-  getGroupList({}).then(res => {
-    groupList.value = res.Data.map(item => item);
-  });
 }
 
 function handleResetForm() {
@@ -203,7 +172,6 @@ function handleClearListQueryToUndefined(field: keyof typeof listQuery.value) {
 }
 
 onMounted(() => {
-  setGroupList();
   handleFilter();
 });
 </script>
@@ -211,61 +179,24 @@ onMounted(() => {
 <template>
   <div>
     <div>
-      <el-form :inline="true">
-        <el-form-item label="发版时间:">
+      <el-form :inline="true" class="query-form-inline">
+        <el-form-item label="版本时间:">
           <el-date-picker
             v-model="listQuery.VertionTime"
             placeholder="请选择"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
-            style="width: 220px"
+            style="width: 120px"
             clearable
           />
         </el-form-item>
         <el-form-item label="版本号:">
-          <el-input
-            v-model="listQuery.VersionNo"
-            style="width: 120px"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="选择分组:">
-          <el-select
-            v-model="listQuery.GroupId"
-            placeholder="请选择"
-            style="width: 120px"
-            clearable
-            @clear="handleClearListQueryToUndefined('GroupId')"
-          >
-            <el-option
-              v-for="option in groupList"
-              :key="option.Id"
-              :label="option.GroupName"
-              :value="option.Id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="版本状态:">
-          <el-select
-            v-model="listQuery.VersionState"
-            placeholder="请选择"
-            style="width: 120px"
-            clearable
-            @clear="handleClearListQueryToUndefined('VersionState')"
-          >
-            <el-option
-              v-for="option in versionStateOptions"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
+          <el-input v-model="listQuery.VersionNo" clearable />
         </el-form-item>
         <el-form-item label="创建人:">
           <el-input
             v-model="listQuery.CreateBy"
             placeholder="请选择"
-            style="width: 120px"
             clearable
           />
         </el-form-item>
@@ -286,7 +217,6 @@ onMounted(() => {
           <el-input
             v-model="listQuery.UpdateBy"
             placeholder="请选择"
-            style="width: 120px"
             clearable
           />
         </el-form-item>
@@ -357,20 +287,35 @@ onMounted(() => {
       >
         <el-table-column type="selection" width="38" />
         <el-table-column prop="Id" label="序号" width="60" />
-        <el-table-column prop="VersionTimeStart" label="版本时间" width="90" />
+        <el-table-column
+          prop="VersionTimeStart"
+          label="版本开始时间"
+          width="180"
+        />
+        <el-table-column
+          prop="VersionTimeEnd"
+          label="版本结束时间"
+          width="180"
+        />
         <el-table-column prop="VersionNo" label="版本号" width="90" />
-        <el-table-column prop="GroupName" label="分组" width="90" />
-        <el-table-column prop="VersionState" label="版本状态" width="90">
-          <template #default="{ row }">
-            {{ DemandState[row.VersionState] }}
-          </template>
-        </el-table-column>
         <el-table-column prop="CreateBy" label="创建人" width="90" />
-        <el-table-column prop="CreateTime" label="创建时间" width="90" />
+        <el-table-column prop="CreateTime" label="创建时间" width="180" />
         <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
-        <el-table-column prop="UpdateTime" label="最后修改时间" width="120" />
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
+        <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              :style="{
+                backgroundColor:
+                  row.VersionState === '任务已完成' ? 'green' : 'red',
+                color: 'white'
+              }"
+              @click="handleUpdateVersion(row)"
+              >{{ row.VersionState }}</el-button
+            >
             <el-button
               link
               type="primary"
@@ -421,3 +366,13 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+.query-form-inline .el-input {
+  width: 120px;
+}
+
+.query-form-inline .el-select {
+  width: 120px;
+}
+</style>

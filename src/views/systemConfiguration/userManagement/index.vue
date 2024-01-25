@@ -257,12 +257,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" class="query-form-inline">
       <el-form-item label="账户名:">
         <el-input
           v-model="listQuery.Account"
           @keyup.enter="handleFilter"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
@@ -270,7 +269,6 @@ onMounted(() => {
         <el-input
           v-model="listQuery.UserName"
           @keyup.enter="handleFilter"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
@@ -286,7 +284,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.GroupId"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('GroupId')"
         >
@@ -302,7 +299,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.RoleId"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('RoleId')"
         >
@@ -318,7 +314,6 @@ onMounted(() => {
         <el-select
           v-model="listQuery.State"
           placeholder="请选择"
-          style="width: 120px"
           clearable
           @clear="handleClearListQueryToUndefined('State')"
         >
@@ -331,12 +326,7 @@ onMounted(() => {
         </el-select>
       </el-form-item>
       <el-form-item label="创建人:">
-        <el-input
-          v-model="listQuery.CreateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.CreateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="创建时间:">
         <el-date-picker
@@ -352,12 +342,7 @@ onMounted(() => {
         />
       </el-form-item>
       <el-form-item label="最后修改人:">
-        <el-input
-          v-model="listQuery.UpdateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.UpdateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="最后修改时间:">
         <el-date-picker
@@ -557,7 +542,15 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
+<style>
+.query-form-inline .el-input {
+  width: 120px;
+}
+
+.query-form-inline .el-select {
+  width: 120px;
+}
+
 .state-enabled {
   color: green;
 }

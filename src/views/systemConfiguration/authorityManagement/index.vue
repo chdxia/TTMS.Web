@@ -5,5 +5,7 @@ defineOptions({
 </script>
 
 <template>
-  <h1>权限管理</h1>
+  <div>
+    <h1>权限管理</h1>
+  </div>
 </template>

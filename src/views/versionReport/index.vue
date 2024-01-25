@@ -5,5 +5,7 @@ defineOptions({
 </script>
 
 <template>
-  <h1>版本周报</h1>
+  <div>
+    <h1>版本周报</h1>
+  </div>
 </template>

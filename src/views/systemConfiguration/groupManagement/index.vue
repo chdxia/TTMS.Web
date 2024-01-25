@@ -167,22 +167,16 @@ onMounted(() => {
 
 <template>
   <div>
-    <el-form :inline="true">
+    <el-form :inline="true" class="query-form-inline">
       <el-form-item label="组名:">
         <el-input
           v-model="listQuery.GroupName"
           @keyup.enter="handleFilter"
-          style="width: 120px"
           clearable
         />
       </el-form-item>
       <el-form-item label="创建人:">
-        <el-input
-          v-model="listQuery.CreateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.CreateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="创建时间:">
         <el-date-picker
@@ -198,12 +192,7 @@ onMounted(() => {
         />
       </el-form-item>
       <el-form-item label="最后修改人:">
-        <el-input
-          v-model="listQuery.UpdateBy"
-          placeholder="请选择"
-          style="width: 120px"
-          clearable
-        />
+        <el-input v-model="listQuery.UpdateBy" placeholder="请选择" clearable />
       </el-form-item>
       <el-form-item label="最后修改时间:">
         <el-date-picker
@@ -320,3 +309,13 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+.query-form-inline .el-input {
+  width: 120px;
+}
+
+.query-form-inline .el-select {
+  width: 120px;
+}
+</style>
