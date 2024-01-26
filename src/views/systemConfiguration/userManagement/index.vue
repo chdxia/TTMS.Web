@@ -407,7 +407,7 @@ onMounted(() => {
         v-model:selected-keys="multipleSelection"
       >
         <el-table-column type="selection" width="38" />
-        <el-table-column prop="Id" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="53" align="center" />
         <el-table-column prop="Account" label="账户名" width="90" />
         <el-table-column prop="UserName" label="用户名" width="90" />
         <el-table-column prop="Email" label="邮箱" width="180" />
@@ -424,9 +424,9 @@ onMounted(() => {
             }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="CreateBy" label="创建人" width="90" />
+        <el-table-column prop="CreateByName" label="创建人" width="90" />
         <el-table-column prop="CreateTime" label="创建时间" width="180" />
-        <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
+        <el-table-column prop="UpdateByName" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
         <el-table-column fixed="right" label="操作" width="180" align="center">
           <template #default="{ row }">

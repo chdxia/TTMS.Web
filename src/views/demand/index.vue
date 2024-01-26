@@ -396,6 +396,13 @@ onMounted(() => {
 <template>
   <div>
     <el-form :inline="true" class="query-form-inline">
+      <el-form-item label="版本号:">
+        <el-input
+          v-model="listQuery.VersionNo"
+          @keyup.enter="handleFilter"
+          clearable
+        />
+      </el-form-item>
       <el-form-item label="所属分组:">
         <el-select
           v-model="listQuery.GroupId"
@@ -527,13 +534,6 @@ onMounted(() => {
           clearable
         />
       </el-form-item>
-      <el-form-item label="版本号:">
-        <el-input
-          v-model="listQuery.VersionNo"
-          placeholder="请选择"
-          clearable
-        />
-      </el-form-item>
       <el-form-item label="创建人:">
         <el-input v-model="listQuery.CreateBy" placeholder="请选择" clearable />
       </el-form-item>
@@ -615,10 +615,17 @@ onMounted(() => {
         border
         style="width: 100%"
         v-model:selected-keys="multipleSelection"
+        :highlight-current-row="true"
       >
         <el-table-column type="selection" width="38" />
-        <el-table-column prop="Id" label="序号" width="60" />
-        <el-table-column prop="VersionNo" label="版本号" width="90" />
+        <el-table-column type="index" label="序号" width="53" align="center" />
+        <el-table-column prop="VersionInfos" label="版本号" width="90">
+          <template #default="{ row }">
+            <span>{{
+              row.VersionInfos.map(item => item.VersionNo).join(", ")
+            }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="GroupName" label="所属分组" width="90" />
         <el-table-column prop="ModuleName" label="一级模块" width="90" />
         <el-table-column prop="ModuleName" label="二级模块" width="90" />
@@ -627,30 +634,156 @@ onMounted(() => {
             {{ DemandType[row.DemandType] }}
           </template>
         </el-table-column>
-        <el-table-column prop="DemandName" label="需求名称" width="90" />
-        <el-table-column prop="DemandDescription" label="需求描述" width="90" />
-        <el-table-column prop="Attachment" label="附件" width="90" />
-        <el-table-column prop="Remark" label="备注" width="90" />
-        <el-table-column prop="ProposerName" label="提出人" width="90" />
+        <el-table-column prop="DemandName" label="需求名称" width="120">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="300"
+              trigger="hover"
+              :content="row.DemandName"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.DemandName }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column prop="Description" label="需求描述" width="120">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="600"
+              trigger="hover"
+              :content="row.Description"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.Description }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ModuleName" label="附件" width="90" />
+        <el-table-column prop="Remark" label="备注" width="90">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="200"
+              trigger="hover"
+              :content="row.Remark"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.Remark }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ProposerName" label="提出人" width="90">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="200"
+              trigger="hover"
+              :content="row.ProposerName"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.ProposerName }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
         <el-table-column prop="ProposeTime" label="提出时间" width="180" />
         <el-table-column prop="DemandPriority" label="优先级" width="90">
           <template #default="{ row }">
             {{ DemandPriority[row.DemandPriority] }}
           </template>
         </el-table-column>
-        <el-table-column prop="DeveloperId" label="开发" width="90" />
-        <el-table-column prop="TesterId" label="测试" width="90" />
+        <el-table-column prop="Developer" label="开发" width="90">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="200"
+              trigger="hover"
+              :content="row.Developer.map(item => item.UserName).join(', ')"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.Developer.map(item => item.UserName).join(", ") }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column prop="Tester" label="测试" width="90">
+          <template #default="{ row }">
+            <el-popover
+              placement="top-start"
+              :width="200"
+              trigger="hover"
+              :content="row.Tester.map(item => item.UserName).join(', ')"
+            >
+              <template #reference>
+                <div
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ row.Tester.map(item => item.UserName).join(", ") }}
+                </div>
+              </template>
+            </el-popover>
+          </template>
+        </el-table-column>
         <el-table-column prop="DemandState" label="需求状态" width="90">
           <template #default="{ row }">
             {{ DemandState[row.DemandState] }}
           </template>
         </el-table-column>
-        <el-table-column prop="EstimatedHours" label="预计工时" width="90" />
+        <el-table-column prop="WorkHours" label="预计工时" width="90" />
         <el-table-column prop="PlanOnlineTime" label="预计上线" width="180" />
         <el-table-column prop="ActualOnlineTime" label="实际上线" width="180" />
-        <el-table-column prop="CreateBy" label="创建人" width="90" />
+        <el-table-column prop="CreateByName" label="创建人" width="90" />
         <el-table-column prop="CreateTime" label="创建时间" width="180" />
-        <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
+        <el-table-column prop="UpdateByName" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
         <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">
@@ -763,8 +896,13 @@ onMounted(() => {
           <el-form-item label="测试:" prop="Tester">
             <el-input v-model="form.Tester" clearable />
           </el-form-item>
-          <el-form-item label="工时:" prop="WorkHours">
-            <el-input v-model="form.WorkHours" clearable />
+          <el-form-item label="预计工时:" prop="WorkHours">
+            <el-input-number
+              v-model="form.WorkHours"
+              :min="0"
+              :precision="2"
+              controls-position="right"
+            />
           </el-form-item>
           <el-form-item label="预计上线时间:" prop="PlanOnlineTime">
             <el-date-picker
@@ -822,7 +960,12 @@ onMounted(() => {
             border
             style="width: 100%"
           >
-            <el-table-column prop="Id" label="序号" width="60" />
+            <el-table-column
+              type="index"
+              label="序号"
+              width="53"
+              align="center"
+            />
             <el-table-column prop="Title" label="BUG标题" width="90" />
             <el-table-column prop="Description" label="BUG描述" width="90" />
             <el-table-column prop="Description" label="附件" width="90" />
@@ -836,7 +979,7 @@ onMounted(() => {
                 {{ DefectState[row.DefectState] }}
               </template>
             </el-table-column>
-            <el-table-column prop="CreateBy" label="创建人" width="90" />
+            <el-table-column prop="CreateByName" label="创建人" width="90" />
             <el-table-column prop="CreateTime" label="创建时间" width="180" />
             <el-table-column
               fixed="right"

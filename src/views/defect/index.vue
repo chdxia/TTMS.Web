@@ -271,7 +271,7 @@ onMounted(() => {
         </el-select>
       </el-form-item>
       <el-form-item label="创建人:">
-        <user-select @selected-user-id="listQuery.CreateBy" />
+        <UserSelect @selected-user-id="listQuery.CreateBy" />
       </el-form-item>
       <el-form-item label="创建时间:">
         <el-date-picker
@@ -330,13 +330,23 @@ onMounted(() => {
     </div>
     <div>
       <el-table :data="list" v-loading="listLoading" border style="width: 100%">
-        <el-table-column prop="Id" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="53" align="center" />
         <el-table-column prop="GroupName" label="所属分组" width="90" />
         <el-table-column prop="ModuleName" label="一级模块" width="90" />
         <el-table-column prop="ModuleName" label="二级模块" width="90" />
         <el-table-column prop="DemandName" label="需求名称" width="90" />
-        <el-table-column prop="DeveloperId" label="开发" width="90" />
-        <el-table-column prop="TesterId" label="测试" width="90" />
+        <el-table-column prop="Developer" label="开发" width="90">
+          <template #default="{ row }">
+            <span>{{
+              row.Developer.map(item => item.UserName).join(", ")
+            }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="Tester" label="测试" width="90">
+          <template #default="{ row }">
+            <span>{{ row.Tester.map(item => item.UserName).join(", ") }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="Title" label="BUG标题" width="90" />
         <el-table-column prop="Description" label="BUG描述" width="90" />
         <el-table-column prop="Description" label="附件" width="90" />
@@ -350,9 +360,9 @@ onMounted(() => {
             {{ DefectState[row.DefectState] }}
           </template>
         </el-table-column>
-        <el-table-column prop="CreateBy" label="创建人" width="90" />
+        <el-table-column prop="CreateByName" label="创建人" width="90" />
         <el-table-column prop="CreateTime" label="创建时间" width="180" />
-        <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
+        <el-table-column prop="UpdateByName" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
         <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">

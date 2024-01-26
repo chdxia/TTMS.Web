@@ -286,7 +286,7 @@ onMounted(() => {
         v-model:selected-keys="multipleSelection"
       >
         <el-table-column type="selection" width="38" />
-        <el-table-column prop="Id" label="序号" width="60" />
+        <el-table-column type="index" label="序号" width="53" align="center" />
         <el-table-column
           prop="VersionTimeStart"
           label="版本开始时间"
@@ -298,9 +298,9 @@ onMounted(() => {
           width="180"
         />
         <el-table-column prop="VersionNo" label="版本号" width="90" />
-        <el-table-column prop="CreateBy" label="创建人" width="90" />
+        <el-table-column prop="CreateByName" label="创建人" width="90" />
         <el-table-column prop="CreateTime" label="创建时间" width="180" />
-        <el-table-column prop="UpdateBy" label="最后修改人" width="120" />
+        <el-table-column prop="UpdateByName" label="最后修改人" width="120" />
         <el-table-column prop="UpdateTime" label="最后修改时间" width="180" />
         <el-table-column fixed="right" label="操作" width="180">
           <template #default="{ row }">

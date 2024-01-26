@@ -17,6 +17,14 @@ defineOptions({
       <li>4）运行前，回调TTMS接口创建自动化测试报告，状态为测试中</li>
       <li>5）运行完成后，回调TTMS接口上传测试结果/报告，状态为测试完成</li>
       <li>6）通过TTMS面板（当前页面）查看自动化测试日志</li>
+      <li>
+        7）工具:Playwright，模板参考：<a
+          href="https://github.com/chdxia/TTMS.AutoTestCase"
+          target="_blank"
+          style="text-decoration: underline; color: blue"
+          >https://github.com/chdxia/TTMS.AutoTestCase</a
+        >
+      </li>
     </ol>
   </div>
 </template>
