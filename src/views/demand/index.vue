@@ -636,24 +636,9 @@ onMounted(() => {
         </el-table-column>
         <el-table-column prop="DemandName" label="需求名称" width="120">
           <template #default="{ row }">
-            <el-popover
-              placement="top-start"
-              :width="300"
-              trigger="hover"
-              :content="row.DemandName"
-            >
-              <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.DemandName }}
-                </div>
-              </template>
-            </el-popover>
+            <el-tooltip :content="row.DemandName">
+              <div class="cell-text">{{ row.DemandName }}</div>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column prop="Description" label="需求描述" width="120">
@@ -665,15 +650,7 @@ onMounted(() => {
               :content="row.Description"
             >
               <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.Description }}
-                </div>
+                <div class="cell-text">{{ row.Description }}</div>
               </template>
             </el-popover>
           </template>
@@ -681,46 +658,16 @@ onMounted(() => {
         <el-table-column prop="ModuleName" label="附件" width="90" />
         <el-table-column prop="Remark" label="备注" width="90">
           <template #default="{ row }">
-            <el-popover
-              placement="top-start"
-              :width="200"
-              trigger="hover"
-              :content="row.Remark"
-            >
-              <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.Remark }}
-                </div>
-              </template>
-            </el-popover>
+            <el-tooltip :content="row.Remark">
+              <div class="cell-text">{{ row.Remark }}</div>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column prop="ProposerName" label="提出人" width="90">
           <template #default="{ row }">
-            <el-popover
-              placement="top-start"
-              :width="200"
-              trigger="hover"
-              :content="row.ProposerName"
-            >
-              <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.ProposerName }}
-                </div>
-              </template>
-            </el-popover>
+            <el-tooltip :content="row.ProposerName">
+              <div class="cell-text">{{ row.ProposerName }}</div>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column prop="ProposeTime" label="提出时间" width="180" />
@@ -731,46 +678,24 @@ onMounted(() => {
         </el-table-column>
         <el-table-column prop="Developer" label="开发" width="90">
           <template #default="{ row }">
-            <el-popover
-              placement="top-start"
-              :width="200"
-              trigger="hover"
+            <el-tooltip
               :content="row.Developer.map(item => item.UserName).join(', ')"
             >
-              <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.Developer.map(item => item.UserName).join(", ") }}
-                </div>
-              </template>
-            </el-popover>
+              <div class="cell-text">
+                {{ row.Developer.map(item => item.UserName).join(", ") }}
+              </div>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column prop="Tester" label="测试" width="90">
           <template #default="{ row }">
-            <el-popover
-              placement="top-start"
-              :width="200"
-              trigger="hover"
+            <el-tooltip
               :content="row.Tester.map(item => item.UserName).join(', ')"
             >
-              <template #reference>
-                <div
-                  style="
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  {{ row.Tester.map(item => item.UserName).join(", ") }}
-                </div>
-              </template>
-            </el-popover>
+              <div class="cell-text">
+                {{ row.Tester.map(item => item.UserName).join(", ") }}
+              </div>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column prop="DemandState" label="需求状态" width="90">
@@ -1055,5 +980,11 @@ onMounted(() => {
 
 .query-form-inline .el-select {
   width: 120px;
+}
+
+.cell-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
