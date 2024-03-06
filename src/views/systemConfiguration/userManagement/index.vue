@@ -23,7 +23,7 @@ const listQuery = ref({
   Email: undefined,
   GroupId: undefined,
   RoleId: undefined,
-  State: undefined,
+  IsDisable: undefined,
   CreateBy: undefined,
   CreateTimeStart: undefined,
   CreateTimeEnd: undefined,
@@ -51,12 +51,12 @@ const form = ref({
   GroupId: undefined,
   PassWord: undefined,
   RoleId: undefined,
-  State: undefined
+  IsDisable: undefined
 });
 
 const userStateOptions = [
-  { id: 1, value: true, text: "已启用" },
-  { id: 2, value: false, text: "已禁用" }
+  { id: 1, value: true, text: "已禁用" },
+  { id: 2, value: false, text: "已启用" }
 ];
 
 const roleTypeOptions = computed(() => {
@@ -77,7 +77,7 @@ const userRule = reactive<FormRules<typeof form>>({
   Email: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
   PassWord: [{ required: true, message: "请输入密码", trigger: "blur" }],
   RoleId: [{ required: true, message: "请选择角色", trigger: "blur" }],
-  State: [{ required: true, message: "请选择状态", trigger: "blur" }]
+  IsDisable: [{ required: true, message: "请选择状态", trigger: "blur" }]
 });
 
 function handleFilter() {
@@ -125,7 +125,7 @@ function handleQueryReset() {
     Email: undefined,
     GroupId: undefined,
     RoleId: undefined,
-    State: undefined,
+    IsDisable: undefined,
     CreateBy: undefined,
     CreateTimeStart: undefined,
     CreateTimeEnd: undefined,
@@ -152,7 +152,7 @@ function getStateText(state) {
 }
 
 function getStateClass(state) {
-  return state ? "state-enabled" : "state-disabled";
+  return state ? "state-disabled" : "state-enabled";
 }
 
 function handleResetForm() {
@@ -170,7 +170,7 @@ function handleCreateUser() {
   handleResetForm();
   dialogStatus.value = "新建用户";
   userRule.PassWord[0].required = true;
-  userRule.State[0].required = false;
+  userRule.IsDisable[0].required = false;
   dialogFormVisible.value = true;
 }
 
@@ -203,7 +203,7 @@ function handleUpdateUser(row) {
   }
   dialogStatus.value = "编辑用户";
   userRule.PassWord[0].required = false;
-  userRule.State[0].required = true;
+  userRule.IsDisable[0].required = true;
   dialogFormVisible.value = true;
 }
 
@@ -312,10 +312,10 @@ onMounted(() => {
       </el-form-item>
       <el-form-item label="选择状态:">
         <el-select
-          v-model="listQuery.State"
+          v-model="listQuery.IsDisable"
           placeholder="请选择"
           clearable
-          @clear="handleClearListQueryToUndefined('State')"
+          @clear="handleClearListQueryToUndefined('IsDisable')"
         >
           <el-option
             v-for="option in userStateOptions"
@@ -417,10 +417,10 @@ onMounted(() => {
             {{ RoleType[row.RoleId] }}
           </template>
         </el-table-column>
-        <el-table-column prop="State" label="账号状态" width="90">
+        <el-table-column prop="IsDisable" label="账号状态" width="90">
           <template #default="{ row }">
-            <span :class="getStateClass(row.State)">{{
-              getStateText(row.State)
+            <span :class="getStateClass(row.IsDisable)">{{
+              getStateText(row.IsDisable)
             }}</span>
           </template>
         </el-table-column>
@@ -511,12 +511,12 @@ onMounted(() => {
               />
             </el-select>
           </el-form-item>
-          <el-form-item label="选择状态:" prop="State">
+          <el-form-item label="选择状态:" prop="IsDisable">
             <el-select
-              v-model="form.State"
+              v-model="form.IsDisable"
               placeholder="请选择"
               clearable
-              @clear="handleClearFormToUndefined('State')"
+              @clear="handleClearFormToUndefined('IsDisable')"
             >
               <el-option
                 v-for="option in userStateOptions"
